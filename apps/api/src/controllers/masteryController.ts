@@ -24,10 +24,7 @@ export const getGrowthHandler = [
   requireAuth,
   validateParams(projectIdParamSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    const data = await getGrowth(
-      getAuth(req).id,
-      (req.params as { projectId: string }).projectId
-    );
+    const data = await getGrowth(getAuth(req).id, (req.params as { projectId: string }).projectId);
     res.status(200).json(toSuccess(data, getRequestId(req)));
   }),
 ];

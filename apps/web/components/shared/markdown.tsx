@@ -42,7 +42,13 @@ function renderSpans(spans: TextSpan[], keyPrefix: string): ReactNode {
   ));
 }
 
-export const MarkdownText = memo(function MarkdownText({ text, className }: { text: string; className?: string }) {
+export const MarkdownText = memo(function MarkdownText({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
   const blocks = parseMarkdown(text);
   if (blocks.length === 0) return null;
   return (
@@ -101,7 +107,10 @@ export const MarkdownText = memo(function MarkdownText({ text, className }: { te
                   <thead>
                     <tr className="bg-muted/60">
                       {block.headers.map((h, j) => (
-                        <th key={`${key}-h-${j}`} className="border-b px-2.5 py-1.5 text-left font-semibold">
+                        <th
+                          key={`${key}-h-${j}`}
+                          className="border-b px-2.5 py-1.5 text-left font-semibold"
+                        >
                           {renderSpans(parseInline(h), `${key}-h-${j}`)}
                         </th>
                       ))}
@@ -111,7 +120,10 @@ export const MarkdownText = memo(function MarkdownText({ text, className }: { te
                     {block.rows.map((row, r) => (
                       <tr key={`${key}-r-${r}`} className="odd:bg-muted/20">
                         {row.map((cell, c) => (
-                          <td key={`${key}-r-${r}-${c}`} className="border-b px-2.5 py-1.5 align-top last:border-b-0">
+                          <td
+                            key={`${key}-r-${r}-${c}`}
+                            className="border-b px-2.5 py-1.5 align-top last:border-b-0"
+                          >
                             {renderSpans(parseInline(cell), `${key}-r-${r}-${c}`)}
                           </td>
                         ))}

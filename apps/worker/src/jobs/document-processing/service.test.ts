@@ -238,9 +238,9 @@ describe.skipIf(!hasTestDb)("document service (isolated test DB)", () => {
       },
     });
 
-    await expect(
-      processMaterialDocument(material.id, { db, storage })
-    ).rejects.toBeInstanceOf(UnrecoverableError);
+    await expect(processMaterialDocument(material.id, { db, storage })).rejects.toBeInstanceOf(
+      UnrecoverableError
+    );
     const updated = await db.material.findUniqueOrThrow({ where: { id: material.id } });
     expect(updated.status).toBe("FAILED");
     expect(updated.lastError).toMatch(/re-upload/i);

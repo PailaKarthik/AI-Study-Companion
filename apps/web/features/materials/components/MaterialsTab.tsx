@@ -5,11 +5,7 @@ import { Check, Circle, Download, FileText, RefreshCw, Trash2, Upload, X } from 
 import { ApiErrorAlert } from "@/components/shared/api-error-alert";
 import { EmptyState, ErrorState, LoadingBar, Spinner } from "@/components/shared/states";
 import { MaterialsSkeleton } from "@/components/shared/skeletons";
-import {
-  StatusBadge,
-  docStatusTone,
-  knowledgeStatusTone,
-} from "@/components/shared/status";
+import { StatusBadge, docStatusTone, knowledgeStatusTone } from "@/components/shared/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ApiClientError, toUserMessage } from "@/lib/api/errors";
@@ -109,7 +105,9 @@ export function MaterialsTab({ projectId }: { projectId: string }) {
     <div className="flex flex-col gap-4">
       <div
         className={`flex flex-col gap-3 rounded-2xl border border-dashed p-4 transition-colors sm:flex-row sm:items-center sm:justify-between ${
-          dragActive ? "border-slate-500 bg-slate-500/[0.06]" : "border-slate-300 bg-muted/20 dark:border-slate-700"
+          dragActive
+            ? "border-slate-500 bg-slate-500/[0.06]"
+            : "border-slate-300 bg-muted/20 dark:border-slate-700"
         }`}
         onDragOver={(event) => {
           event.preventDefault();
@@ -132,7 +130,8 @@ export function MaterialsTab({ projectId }: { projectId: string }) {
               {dragActive ? "Drop the PDF to upload" : "Drag a PDF here, or choose a file"}
             </p>
             <p className="text-xs text-muted-foreground">
-              Stored securely · queued for extraction & indexing · max {formatBytes(MAX_UPLOAD_BYTES)}
+              Stored securely · queued for extraction & indexing · max{" "}
+              {formatBytes(MAX_UPLOAD_BYTES)}
             </p>
           </div>
         </div>
@@ -265,7 +264,10 @@ function MaterialCard({
       <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <p className="flex items-center gap-1.5 truncate text-sm font-medium">
-            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-label="PDF document" />
+            <FileText
+              className="h-4 w-4 shrink-0 text-muted-foreground"
+              aria-label="PDF document"
+            />
             <span className="truncate">{material.filename}</span>
           </p>
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

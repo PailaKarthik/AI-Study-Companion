@@ -8,13 +8,7 @@ export const logger = pino({
     environment: workerConfig.SENTRY_ENVIRONMENT,
   },
   redact: {
-    paths: [
-      "*.apiKey",
-      "*.password",
-      "*.token",
-      "*.secret",
-      "UPSTASH_REDIS_TOKEN",
-    ],
+    paths: ["*.apiKey", "*.password", "*.token", "*.secret", "UPSTASH_REDIS_TOKEN"],
     censor: "[REDACTED]",
   },
   transport:

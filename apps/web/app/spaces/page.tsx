@@ -45,7 +45,10 @@ function SpacesContent() {
             actions={
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 {spaces.data ? (
-                  <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold tabular-nums text-white dark:bg-white dark:text-slate-950" aria-live="polite">
+                  <span
+                    className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold tabular-nums text-white dark:bg-white dark:text-slate-950"
+                    aria-live="polite"
+                  >
                     {spaces.data.total === 1 ? "1 space" : `${spaces.data.total} spaces`}
                   </span>
                 ) : null}

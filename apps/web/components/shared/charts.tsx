@@ -95,8 +95,19 @@ export const ActivityBars = memo(function ActivityBars({
               />
               {isPeak ? (
                 <g aria-hidden>
-                  <circle cx={x + barWidth / 2} cy={height - barHeight - 5} r={5} className="fill-slate-500 opacity-30 animate-ping motion-reduce:animate-none" style={{ transformBox: "fill-box", transformOrigin: "center" }} />
-                  <circle cx={x + barWidth / 2} cy={height - barHeight - 5} r={2.5} className="fill-slate-900" />
+                  <circle
+                    cx={x + barWidth / 2}
+                    cy={height - barHeight - 5}
+                    r={5}
+                    className="fill-slate-500 opacity-30 animate-ping motion-reduce:animate-none"
+                    style={{ transformBox: "fill-box", transformOrigin: "center" }}
+                  />
+                  <circle
+                    cx={x + barWidth / 2}
+                    cy={height - barHeight - 5}
+                    r={2.5}
+                    className="fill-slate-900"
+                  />
                 </g>
               ) : null}
             </g>
@@ -234,20 +245,21 @@ export const MasteryTrendChart = memo(function MasteryTrendChart({
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
   const xs = ordered.map((_, i) =>
-    ordered.length === 1 ? padLeft + innerWidth / 2 : padLeft + (i / (ordered.length - 1)) * innerWidth
+    ordered.length === 1
+      ? padLeft + innerWidth / 2
+      : padLeft + (i / (ordered.length - 1)) * innerWidth
   );
-  const ys = ordered.map(
-    (p) => padTop + (1 - Math.min(1, Math.max(0, p.newScore))) * innerHeight
-  );
-  const line = xs.map((x, i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${(ys[i] ?? 0).toFixed(1)}`).join(" ");
+  const ys = ordered.map((p) => padTop + (1 - Math.min(1, Math.max(0, p.newScore))) * innerHeight);
+  const line = xs
+    .map((x, i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${(ys[i] ?? 0).toFixed(1)}`)
+    .join(" ");
   const area =
     line.length > 0
       ? `${line} L${(xs[xs.length - 1] ?? 0).toFixed(1)},${(padTop + innerHeight).toFixed(1)} L${(xs[0] ?? 0).toFixed(1)},${(padTop + innerHeight).toFixed(1)} Z`
       : "";
   const first = ordered[0];
   const last = ordered[ordered.length - 1];
-  const delta =
-    first && last && ordered.length > 1 ? last.newScore - first.newScore : null;
+  const delta = first && last && ordered.length > 1 ? last.newScore - first.newScore : null;
   const up = (delta ?? 0) >= 0;
   const areaId = useId();
   const lineId = useId();
@@ -285,7 +297,14 @@ export const MasteryTrendChart = memo(function MasteryTrendChart({
                   strokeDasharray={fraction === 1 || fraction === 0 ? undefined : "3 3"}
                   aria-hidden
                 />
-                <text x={padLeft - 6} y={y + 3} textAnchor="end" fontSize={10} className="fill-muted-foreground" aria-hidden>
+                <text
+                  x={padLeft - 6}
+                  y={y + 3}
+                  textAnchor="end"
+                  fontSize={10}
+                  className="fill-muted-foreground"
+                  aria-hidden
+                >
                   {Math.round(fraction * 100)}%
                 </text>
               </g>
@@ -311,7 +330,6 @@ export const MasteryTrendChart = memo(function MasteryTrendChart({
               strokeDasharray={1}
               aria-hidden
               className="animate-line-draw motion-reduce:animate-none"
-              
             />
           ) : null}
           {ordered.map((point, i) => {
@@ -347,7 +365,10 @@ export const MasteryTrendChart = memo(function MasteryTrendChart({
         </svg>
       </div>
       {ordered.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground" aria-hidden>
+        <div
+          className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+          aria-hidden
+        >
           <span>
             {formatDay(first?.createdAt ?? "")} → {formatDay(last?.createdAt ?? "")}
           </span>
@@ -359,7 +380,8 @@ export const MasteryTrendChart = memo(function MasteryTrendChart({
                   : "rounded-full border px-2 py-0.5 font-semibold tabular-nums text-muted-foreground"
               }
             >
-              {up ? "↗" : "↘"} {up ? "+" : ""}{Math.round(delta * 100)} pts
+              {up ? "↗" : "↘"} {up ? "+" : ""}
+              {Math.round(delta * 100)} pts
             </span>
           ) : null}
         </div>

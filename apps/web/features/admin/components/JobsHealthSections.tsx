@@ -83,7 +83,11 @@ export function JobsSection() {
                   {new Date(job.createdAt).toLocaleString()}
                 </span>
                 <Progress
-                  value={job.maxAttempts > 0 ? Math.min(100, Math.round((job.attempts / job.maxAttempts) * 100)) : 0}
+                  value={
+                    job.maxAttempts > 0
+                      ? Math.min(100, Math.round((job.attempts / job.maxAttempts) * 100))
+                      : 0
+                  }
                   aria-label={`Attempt ${job.attempts} of ${job.maxAttempts}`}
                   className="h-1.5"
                 />
@@ -127,7 +131,12 @@ export function SystemHealthSection() {
         />
         <StatCard
           label="Database"
-          value={<HealthDot tone={jobStatusTone(data.services.database.status)} label={data.services.database.status} />}
+          value={
+            <HealthDot
+              tone={jobStatusTone(data.services.database.status)}
+              label={data.services.database.status}
+            />
+          }
           hint={
             data.services.database.latencyMs !== undefined
               ? `${data.services.database.latencyMs}ms ping`
@@ -137,18 +146,33 @@ export function SystemHealthSection() {
         />
         <StatCard
           label="Worker"
-          value={<HealthDot tone={jobStatusTone(data.services.worker.status)} label={data.services.worker.status} />}
+          value={
+            <HealthDot
+              tone={jobStatusTone(data.services.worker.status)}
+              label={data.services.worker.status}
+            />
+          }
           hint={data.services.worker.detail ?? "No job history yet"}
           icon={Cpu}
         />
         <StatCard
           label="Redis"
-          value={<HealthDot tone={jobStatusTone(data.services.redis.status)} label={data.services.redis.status} />}
+          value={
+            <HealthDot
+              tone={jobStatusTone(data.services.redis.status)}
+              label={data.services.redis.status}
+            />
+          }
           hint={data.services.redis.detail}
         />
         <StatCard
           label="Storage"
-          value={<HealthDot tone={jobStatusTone(data.services.storage.status)} label={data.services.storage.status} />}
+          value={
+            <HealthDot
+              tone={jobStatusTone(data.services.storage.status)}
+              label={data.services.storage.status}
+            />
+          }
           hint={data.services.storage.detail ?? ""}
           icon={HardDrive}
         />

@@ -37,7 +37,11 @@ export function DashboardSkeleton() {
 
 export function SpacesGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading spaces">
+    <div
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      role="status"
+      aria-label="Loading spaces"
+    >
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="flex flex-col gap-4 rounded-2xl border p-5">
           <div className="flex items-start justify-between">
@@ -105,7 +109,10 @@ export function MaterialsSkeleton({ rows = 3 }: { rows?: number }) {
   return (
     <div className="flex flex-col gap-3" role="status" aria-label="Loading materials">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="flex flex-col gap-2 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div
+          key={i}
+          className="flex flex-col gap-2 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+        >
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Skeleton className="h-4 w-48 max-w-full" />
             <div className="flex gap-2">

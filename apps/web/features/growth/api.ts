@@ -51,10 +51,7 @@ export async function completeRecommendationRequest(
   return data;
 }
 
-export async function dismissRecommendationRequest(
-  recommendationId: string,
-  signal?: AbortSignal
-) {
+export async function dismissRecommendationRequest(recommendationId: string, signal?: AbortSignal) {
   const { data } = await api.post<RecommendationDetail>(
     `/api/recommendations/${recommendationId}/dismiss`,
     {},

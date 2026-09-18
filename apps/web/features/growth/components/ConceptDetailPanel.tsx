@@ -124,19 +124,19 @@ export function ConceptDetailPanel({
               ariaLabel={`${conceptName} mastery over time`}
             />
             <ul className="flex flex-col gap-2">
-            {data.history.map((point) => (
-              <li
-                key={point.masteryEventId}
-                className="flex items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-sm"
-              >
-                <span className="font-medium">{Math.round(point.newScore * 100)}%</span>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {point.sourceType.toLowerCase().replaceAll("_", " ")} ·{" "}
-                  {formatDateTime(point.createdAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
+              {data.history.map((point) => (
+                <li
+                  key={point.masteryEventId}
+                  className="flex items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-sm"
+                >
+                  <span className="font-medium">{Math.round(point.newScore * 100)}%</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {point.sourceType.toLowerCase().replaceAll("_", " ")} ·{" "}
+                    {formatDateTime(point.createdAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : (
           <EmptyState preset="analytics" />

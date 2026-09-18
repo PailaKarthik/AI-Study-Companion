@@ -28,13 +28,16 @@ export function Breadcrumbs({ items, className }: { items: Crumb[]; className?: 
                     href={item.href}
                     className={cn(
                       "truncate rounded transition-colors hover:text-foreground",
-                      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     )}
                   >
                     {item.label}
                   </Link>
                 ) : (
-                  <span aria-current={last ? "page" : undefined} className={last ? "truncate font-medium text-foreground" : "truncate"}>
+                  <span
+                    aria-current={last ? "page" : undefined}
+                    className={last ? "truncate font-medium text-foreground" : "truncate"}
+                  >
                     {item.label}
                   </span>
                 )}

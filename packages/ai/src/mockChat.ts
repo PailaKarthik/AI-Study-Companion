@@ -1,9 +1,5 @@
 import { approximateMessagesTokens, approximateTokens } from "./chat.js";
-import type {
-  ChatCompletionInput,
-  ChatCompletionProvider,
-  ChatCompletionResult,
-} from "./chat.js";
+import type { ChatCompletionInput, ChatCompletionProvider, ChatCompletionResult } from "./chat.js";
 
 /**
  * Deterministic stand-in for tests and keyless local runs. Returns a canned
@@ -20,9 +16,7 @@ export class MockChatProvider implements ChatCompletionProvider {
 
   async complete(input: ChatCompletionInput): Promise<ChatCompletionResult> {
     this.calls += 1;
-    const evidenceBlocks = input.messages.filter((m) =>
-      m.content.includes("[Source ")
-    ).length;
+    const evidenceBlocks = input.messages.filter((m) => m.content.includes("[Source ")).length;
     const lastUser = [...input.messages].reverse().find((m) => m.role === "user");
     const question = lastUser ? lastUser.content.slice(0, 120) : "your question";
     const content =

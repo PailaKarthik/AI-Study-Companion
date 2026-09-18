@@ -10,8 +10,8 @@ named honest limitation.
 | Operation              | Policy                                                                                                                                                                                                         |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Groq chat              | `TUTOR_MAX_ATTEMPTS` (2) / `QUIZ_LLM_MAX_ATTEMPTS` (2), exponential backoff, only on retryable statuses (408/429/5xx) + transport errors. Permanent 4xx, empty completions, schema failures abort immediately. |
-| Gemini embeddings      | `EMBEDDING_MAX_ATTEMPTS` (4), same retryable-only rule.
-| Document enqueue       | `ENQUEUE_TIMEOUT_MS` (10s) — a stalled Redis becomes a deferred `QUEUED` (upload, recoverable via reprocess) or a 503 (reprocess/reindex), never a hang |                                                                                                                                                        |
+| Gemini embeddings      | `EMBEDDING_MAX_ATTEMPTS` (4), same retryable-only rule.                                                                                                                                                        |
+| Document enqueue       | `ENQUEUE_TIMEOUT_MS` (10s) — a stalled Redis becomes a deferred `QUEUED` (upload, recoverable via reprocess) or a 503 (reprocess/reindex), never a hang                                                        |     |
 | BullMQ document jobs   | 5 attempts, exponential backoff 5s — matches `DocumentJob.maxAttempts` (schema default 5) so the durable row and the transport agree.                                                                          |
 | BullMQ knowledge jobs  | 3 attempts, exponential backoff 5s (shared `defaultJobOptions`; durable row mirrored via `job-tracking.ts`).                                                                                                   |
 | BullMQ evaluation jobs | 3 attempts, exponential backoff 5s (no durable row; processor skips existing).                                                                                                                                 |
@@ -29,14 +29,14 @@ never burn the credential-endpoint budgets (regression covered in
 
 ## 2. Timeouts
 
-| Call                      | Timeout                                                                  |
-| ------------------------- | ------------------------------------------------------------------------ |
-| Groq chat (tutor)         | `TUTOR_TIMEOUT_MS` (60s) via `AbortSignal.timeout`                       |
-| Groq chat (quiz LLM)      | `QUIZ_LLM_TIMEOUT_MS` (90s)                                              |
-| Gemini embeddings         | `EMBEDDING_TIMEOUT_MS` (30s)                                             |
-| Document enqueue       | `ENQUEUE_TIMEOUT_MS` (10s) — a stalled Redis becomes a deferred `QUEUED` (upload, recoverable via reprocess) or a 503 (reprocess/reindex), never a hang |
-| Knowledge enqueue      | `ENQUEUE_TIMEOUT_MS` (10s) — a stalled Redis becomes a 503, never a hang |
-| Tutor persist transaction | 15s Prisma `timeout`                                                     |
+| Call                      | Timeout                                                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Groq chat (tutor)         | `TUTOR_TIMEOUT_MS` (60s) via `AbortSignal.timeout`                                                                                                      |
+| Groq chat (quiz LLM)      | `QUIZ_LLM_TIMEOUT_MS` (90s)                                                                                                                             |
+| Gemini embeddings         | `EMBEDDING_TIMEOUT_MS` (30s)                                                                                                                            |
+| Document enqueue          | `ENQUEUE_TIMEOUT_MS` (10s) — a stalled Redis becomes a deferred `QUEUED` (upload, recoverable via reprocess) or a 503 (reprocess/reindex), never a hang |
+| Knowledge enqueue         | `ENQUEUE_TIMEOUT_MS` (10s) — a stalled Redis becomes a 503, never a hang                                                                                |
+| Tutor persist transaction | 15s Prisma `timeout`                                                                                                                                    |
 
 Timeouts are recorded as `AIUsageStatus.TIMEOUT`, never lumped into
 `FAILED` (previously undercounted; fixed with `isTimeoutError` +
@@ -192,5 +192,3 @@ production-like data.
 - E2E runs the full journey against honest empty states; AI-dependent
   flows are proven by API suites with routed LLM stubs, not in the
   browser (no mock data in production code paths either way).
-
-

@@ -13,16 +13,11 @@ export const requestLogger: RequestHandler = pinoHttp({
   customProps: (req: Request) => ({
     requestId: getRequestId(req),
   }),
-  customSuccessMessage: (req, res) =>
-    `${req.method} ${req.url} -> ${res.statusCode}`,
+  customSuccessMessage: (req, res) => `${req.method} ${req.url} -> ${res.statusCode}`,
   customErrorMessage: (req, res, error) =>
     `${req.method} ${req.url} -> ${res.statusCode}: ${error.message}`,
 });
 
-export function requestLoggerMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
+export function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction): void {
   requestLogger(req, res, next);
 }

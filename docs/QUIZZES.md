@@ -36,13 +36,13 @@ alternate. `difficulty` overrides the fitted level for focused practice.
 
 Pure function `selectTargets` — NOT "correct → harder / wrong → easier":
 
-| Signal | Weight | Source |
-|---|---|---|
-| Need (1 − mastery, else 1 − accuracy, else 0.55 prior) | 0.35 | ConceptMastery / QuizResponse |
-| Recent mistakes (incorrect / 5) | 0.25 | Recent QuizResponses |
-| Freshness (unseen = 1, else staleness / 7d) | 0.15 | Response history |
-| Prerequisite of a weak concept | 0.15 | ConceptRelation (PREREQUISITE) |
-| Recent form (1 − recent accuracy) | 0.10 | Recent window |
+| Signal                                                 | Weight | Source                         |
+| ------------------------------------------------------ | ------ | ------------------------------ |
+| Need (1 − mastery, else 1 − accuracy, else 0.55 prior) | 0.35   | ConceptMastery / QuizResponse  |
+| Recent mistakes (incorrect / 5)                        | 0.25   | Recent QuizResponses           |
+| Freshness (unseen = 1, else staleness / 7d)            | 0.15   | Response history               |
+| Prerequisite of a weak concept                         | 0.15   | ConceptRelation (PREREQUISITE) |
+| Recent form (1 − recent accuracy)                      | 0.10   | Recent window                  |
 
 Difficulty is fit from **aggregate** evidence (mastery → accuracy →
 stated `INTERMEDIATE` default), never from the last answer. Unknown

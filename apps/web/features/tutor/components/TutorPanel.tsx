@@ -2,15 +2,7 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
-import {
-  ArrowUp,
-  FileText,
-  MessageSquarePlus,
-  PanelLeft,
-  Search,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { ArrowUp, FileText, MessageSquarePlus, PanelLeft, Search, Sparkles, X } from "lucide-react";
 import { ApiErrorAlert } from "@/components/shared/api-error-alert";
 import { MarkdownText } from "@/components/shared/markdown";
 import { EmptyState, ErrorState, ThinkingDots } from "@/components/shared/states";
@@ -51,7 +43,11 @@ function formatGroupDate(iso: string | null): string {
 
 /* ---------------------------------- messages ---------------------------------- */
 
-const AssistantMessage = memo(function AssistantMessage({ message }: { message: TutorMessageItem }) {
+const AssistantMessage = memo(function AssistantMessage({
+  message,
+}: {
+  message: TutorMessageItem;
+}) {
   return (
     <div className="flex items-start gap-2.5">
       <span
@@ -365,10 +361,7 @@ export function TutorPanel({ projectId }: { projectId: string }) {
 
   function handleAsk(message: string) {
     submitSeq.current = navigationSeq.current;
-    ask.mutate(
-      { message, ...(activeId ? { conversationId: activeId } : {}) },
-      undefined
-    );
+    ask.mutate({ message, ...(activeId ? { conversationId: activeId } : {}) }, undefined);
   }
 
   function switchThread(id: string | null) {
@@ -475,7 +468,9 @@ export function TutorPanel({ projectId }: { projectId: string }) {
             </p>
           ) : null}
 
-          {detail.isPending && activeId !== null && !ask.isPending ? <ConversationSkeleton /> : null}
+          {detail.isPending && activeId !== null && !ask.isPending ? (
+            <ConversationSkeleton />
+          ) : null}
 
           {messages.map((message) =>
             message.role === "ASSISTANT" ? (
@@ -500,19 +495,15 @@ export function TutorPanel({ projectId }: { projectId: string }) {
           <div ref={messagesEndRef} aria-hidden />
 
           <div className="lg:sticky lg:bottom-0 lg:pb-1">
-            <TutorComposer
-              key={activeId ?? "new"}
-              pending={ask.isPending}
-              onSubmit={handleAsk}
-            />
+            <TutorComposer key={activeId ?? "new"} pending={ask.isPending} onSubmit={handleAsk} />
           </div>
 
           {error ? <ApiErrorAlert message={toUserMessage(error)} requestId={requestId} /> : null}
 
           {ask.data && !ask.data.grounded ? (
             <p className="text-sm text-muted-foreground" role="note">
-              No relevant material was found for that question, so the tutor answered honestly instead
-              of guessing. Try different keywords, or upload the right document first.
+              No relevant material was found for that question, so the tutor answered honestly
+              instead of guessing. Try different keywords, or upload the right document first.
             </p>
           ) : null}
         </div>

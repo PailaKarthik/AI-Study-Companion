@@ -489,10 +489,8 @@ export async function getQuiz(
       toSafeQuestion({ ...q, difficulty: q.difficulty as ConceptDifficulty | null })
     ),
     createdAt: quiz.createdAt.toISOString(),
-    requestedCount:
-      typeof meta.requestedCount === "number" ? meta.requestedCount : generatedCount,
-    generatedCount:
-      typeof meta.generatedCount === "number" ? meta.generatedCount : generatedCount,
+    requestedCount: typeof meta.requestedCount === "number" ? meta.requestedCount : generatedCount,
+    generatedCount: typeof meta.generatedCount === "number" ? meta.generatedCount : generatedCount,
   };
 }
 

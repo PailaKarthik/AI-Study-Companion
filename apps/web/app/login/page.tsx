@@ -65,14 +65,22 @@ export default function LoginPage() {
                 label="Email"
                 error={form.formState.errors.email}
                 registration={form.register("email")}
-                inputProps={{ type: "email", autoComplete: "email", placeholder: "you@example.com" }}
+                inputProps={{
+                  type: "email",
+                  autoComplete: "email",
+                  placeholder: "you@example.com",
+                }}
               />
               <Field
                 id="password"
                 label="Password"
                 error={form.formState.errors.password}
                 registration={form.register("password")}
-                inputProps={{ type: "password", autoComplete: "current-password", placeholder: "••••••••" }}
+                inputProps={{
+                  type: "password",
+                  autoComplete: "current-password",
+                  placeholder: "••••••••",
+                }}
               />
               {error ? (
                 <ApiErrorAlert message={toUserMessage(error)} requestId={requestId} />

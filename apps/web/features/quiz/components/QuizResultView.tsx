@@ -24,7 +24,10 @@ export function QuizResultView({
   const percentage = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : 0;
   return (
     <div className="flex flex-col gap-4">
-      <SectionCard title="Assessment result" description="This attempt's score — not long-term mastery.">
+      <SectionCard
+        title="Assessment result"
+        description="This attempt's score — not long-term mastery."
+      >
         <div className="flex flex-col gap-1">
           <p className="text-3xl font-semibold tracking-tight">
             {result.score.toFixed(1)} / {result.maxScore}
@@ -38,7 +41,10 @@ export function QuizResultView({
       </SectionCard>
 
       {result.conceptPerformance.length > 0 ? (
-        <SectionCard title="Concept performance" description="Per-concept breakdown of this attempt.">
+        <SectionCard
+          title="Concept performance"
+          description="Per-concept breakdown of this attempt."
+        >
           <ul className="flex flex-col gap-2">
             {result.conceptPerformance.map((concept) => (
               <li
@@ -59,7 +65,10 @@ export function QuizResultView({
       ) : null}
 
       {result.openEndedReviews.length > 0 ? (
-        <SectionCard title="Open-ended feedback" description="What you got right, what's missing, what to review.">
+        <SectionCard
+          title="Open-ended feedback"
+          description="What you got right, what's missing, what to review."
+        >
           <div className="flex flex-col gap-3">
             {result.openEndedReviews.map((review) => (
               <Card key={review.questionId}>
@@ -102,7 +111,10 @@ export function QuizResultView({
       ) : null}
 
       {(result.strengths.length > 0 || result.weakAreas.length > 0) && (
-        <SectionCard title="Areas to review" description="Concepts worth revisiting from this attempt.">
+        <SectionCard
+          title="Areas to review"
+          description="Concepts worth revisiting from this attempt."
+        >
           <div className="flex flex-col gap-2 text-sm">
             {result.weakAreas.length > 0 ? (
               <p>

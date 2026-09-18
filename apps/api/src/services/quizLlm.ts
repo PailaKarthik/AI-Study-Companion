@@ -88,7 +88,13 @@ export async function completeJson<T>(
   schema: z.ZodType<T, z.ZodTypeDef, unknown>,
   messages: ChatMessage[],
   options: JsonCompletionOptions = {}
-): Promise<{ data: T; inputTokens: number; outputTokens: number; model: string; latencyMs: number }> {
+): Promise<{
+  data: T;
+  inputTokens: number;
+  outputTokens: number;
+  model: string;
+  latencyMs: number;
+}> {
   const startedAt = Date.now();
   const completed = await chat.complete({
     messages: [
@@ -107,9 +113,7 @@ export async function completeJson<T>(
   try {
     parsed = JSON.parse(extractJsonPayload(completed.content));
   } catch {
-    const error = new Error(
-      `Model returned non-JSON output: ${completed.content.slice(0, 200)}`
-    );
+    const error = new Error(`Model returned non-JSON output: ${completed.content.slice(0, 200)}`);
     (error as { retryable?: boolean }).retryable = true;
     throw error;
   }

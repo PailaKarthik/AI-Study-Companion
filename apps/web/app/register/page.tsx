@@ -72,7 +72,11 @@ export default function RegisterPage() {
                 label="Email"
                 error={form.formState.errors.email}
                 registration={form.register("email")}
-                inputProps={{ type: "email", autoComplete: "email", placeholder: "you@example.com" }}
+                inputProps={{
+                  type: "email",
+                  autoComplete: "email",
+                  placeholder: "you@example.com",
+                }}
               />
               <Field
                 id="password"

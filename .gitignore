@@ -10,9 +10,13 @@ build/
 out/
 *.tsbuildinfo
 
-# Env
+# Env (root and nested packages — never commit real credentials)
 .env
+apps/*/.env
+packages/*/.env
 .env.local
+apps/*/.env.local
+packages/*/.env.local
 .env.*.local
 
 # Prisma

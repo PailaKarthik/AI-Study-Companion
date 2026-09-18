@@ -169,15 +169,15 @@ export function parseMarkdown(input: string): Block[] {
     }
 
     // Pipe table: header + separator + body rows.
-    if (
-      line.includes("|") &&
-      i + 1 < lines.length &&
-      isTableSeparator(lines[i + 1] as string)
-    ) {
+    if (line.includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1] as string)) {
       const headers = splitRow(line);
       i += 2;
       const rows: string[][] = [];
-      while (i < lines.length && (lines[i] as string).includes("|") && !isRule(lines[i] as string)) {
+      while (
+        i < lines.length &&
+        (lines[i] as string).includes("|") &&
+        !isRule(lines[i] as string)
+      ) {
         const row = splitRow(lines[i] as string);
         if (row.every((c) => c.length === 0)) break;
         rows.push(row);

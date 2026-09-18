@@ -76,10 +76,7 @@ function practiceAction(conceptId: string): RecommendationAction {
   return { kind: "PRACTICE_CONCEPT", targetId: conceptId, label: "Practice now" };
 }
 
-function reviewAction(
-  conceptId: string,
-  materialId: string | null
-): RecommendationAction {
+function reviewAction(conceptId: string, materialId: string | null): RecommendationAction {
   return materialId
     ? { kind: "REVIEW_MATERIAL", targetId: materialId, label: "Review material" }
     : { kind: "PRACTICE_CONCEPT", targetId: conceptId, label: "Practice now" };
@@ -141,9 +138,10 @@ export function buildCandidates(
 
     if (score < opts.attentionBelow || s.trend === "NEEDS_ATTENTION") {
       const priority: RecommendationPriority = "HIGH";
-      const prereqNote = s.supportsWeakConcept && s.supportsConceptName
-        ? ` Strengthening it also unlocks ${s.supportsConceptName}, which needs it as a foundation.`
-        : "";
+      const prereqNote =
+        s.supportsWeakConcept && s.supportsConceptName
+          ? ` Strengthening it also unlocks ${s.supportsConceptName}, which needs it as a foundation.`
+          : "";
       candidates.push({
         conceptId: s.conceptId,
         conceptName: s.conceptName,

@@ -88,15 +88,15 @@ export function ActivitySection() {
               >
                 <ActivityEventIcon eventType={event.eventType} />
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="truncate font-medium">
-                  {event.eventType.replaceAll("_", " ").toLowerCase()}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {event.userEmail ?? "system"}
-                  {event.projectId ? ` · project ${event.projectId.slice(0, 8)}` : ""}
-                  {" · "}
-                  {new Date(event.createdAt).toLocaleString()}
-                </span>
+                  <span className="truncate font-medium">
+                    {event.eventType.replaceAll("_", " ").toLowerCase()}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {event.userEmail ?? "system"}
+                    {event.projectId ? ` · project ${event.projectId.slice(0, 8)}` : ""}
+                    {" · "}
+                    {new Date(event.createdAt).toLocaleString()}
+                  </span>
                 </div>
               </li>
             ))}

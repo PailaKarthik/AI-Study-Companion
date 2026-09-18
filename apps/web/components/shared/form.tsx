@@ -28,7 +28,8 @@ export function Field({
 }) {
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
-  const describedBy = [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") || undefined;
+  const describedBy =
+    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") || undefined;
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <label htmlFor={id} className="text-sm font-medium">

@@ -61,7 +61,14 @@ export function QuizReviewView({
     );
   }
 
-  return <QuizReviewContent attempt={attempt.data} quizTitle={quizTitle} onBack={onBack} onRetry={onRetry} />;
+  return (
+    <QuizReviewContent
+      attempt={attempt.data}
+      quizTitle={quizTitle}
+      onBack={onBack}
+      onRetry={onRetry}
+    />
+  );
 }
 
 function QuizReviewContent({
@@ -100,7 +107,10 @@ function QuizReviewContent({
         </Button>
       </div>
 
-      <SectionCard title={quizTitle} description={`Reviewed ${formatDateTime(attempt.completedAt ?? attempt.startedAt)}`}>
+      <SectionCard
+        title={quizTitle}
+        description={`Reviewed ${formatDateTime(attempt.completedAt ?? attempt.startedAt)}`}
+      >
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-3xl font-semibold tracking-tight">
             {attempt.score !== null ? attempt.score.toFixed(1) : "—"}
@@ -123,13 +133,19 @@ function QuizReviewContent({
 
       <div className="flex flex-col gap-3">
         {attempt.questions.map((question, index) => {
-          const state = !question.answered ? "unanswered" : question.isCorrect ? "correct" : "incorrect";
+          const state = !question.answered
+            ? "unanswered"
+            : question.isCorrect
+              ? "correct"
+              : "incorrect";
           return (
             <Card key={question.id}>
               <CardContent className="flex flex-col gap-2 p-4 sm:p-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge
-                    tone={state === "correct" ? "success" : state === "incorrect" ? "danger" : "warning"}
+                    tone={
+                      state === "correct" ? "success" : state === "incorrect" ? "danger" : "warning"
+                    }
                     invert={state === "correct"}
                   >
                     {state === "correct" ? (

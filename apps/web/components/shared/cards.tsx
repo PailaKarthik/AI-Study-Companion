@@ -68,9 +68,7 @@ export function StatCard({
   );
   const classes = cn(
     "relative overflow-hidden rounded-2xl p-6",
-    dark
-      ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800"
-      : "",
+    dark ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800" : "",
     href && "transition-all hover:-translate-y-0.5 motion-reduce:transform-none",
     className
   );

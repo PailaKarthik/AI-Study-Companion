@@ -105,8 +105,7 @@ export function fitDifficulty(signal: Pick<ConceptSignalInput, "masteryScore" | 
 function scoreConcept(signal: ConceptSignalInput): Omit<Scored, "signal" | "difficulty"> {
   const reasons: string[] = [];
 
-  const needBase =
-    signal.masteryScore ?? signal.accuracy ?? UNKNOWN_NEED_PRIOR;
+  const needBase = signal.masteryScore ?? signal.accuracy ?? UNKNOWN_NEED_PRIOR;
   const need = clamp01(1 - needBase);
   reasons.push(
     signal.masteryScore !== null
@@ -137,7 +136,12 @@ function scoreConcept(signal: ConceptSignalInput): Omit<Scored, "signal" | "diff
   }
 
   const w = SELECTOR_WEIGHTS;
-  const score = w.need * need + w.mistake * mistake + w.freshness * freshness + w.support * support + w.form * form;
+  const score =
+    w.need * need +
+    w.mistake * mistake +
+    w.freshness * freshness +
+    w.support * support +
+    w.form * form;
   return { score, need, reasons };
 }
 
@@ -153,18 +157,16 @@ function scoreConcept(signal: ConceptSignalInput): Omit<Scored, "signal" | "diff
  * caller explicitly narrowed it.
  */
 export function selectTargets(request: SelectionRequest): SelectionTarget[] {
-  const pool = (
+  const pool =
     request.conceptIds && request.conceptIds.length > 0
       ? request.concepts.filter((c) => request.conceptIds?.includes(c.conceptId))
-      : [...request.concepts]
-  );
+      : [...request.concepts];
   if (pool.length === 0 || request.count <= 0) return [];
 
-  const scored: Scored[] = pool.map((signal) => {    const { score, need, reasons } = scoreConcept(signal);
+  const scored: Scored[] = pool.map((signal) => {
+    const { score, need, reasons } = scoreConcept(signal);
     const fitted = request.difficulty ?? fitDifficulty(signal).difficulty;
-    const fitReason = request.difficulty
-      ? "explicit-practice-level"
-      : fitDifficulty(signal).reason;
+    const fitReason = request.difficulty ? "explicit-practice-level" : fitDifficulty(signal).reason;
     return { signal, score, need, difficulty: fitted, reasons: [...reasons, fitReason] };
   });
   scored.sort((a, b) => b.score - a.score || (a.signal.conceptId < b.signal.conceptId ? -1 : 1));
@@ -189,8 +191,7 @@ export function selectTargets(request: SelectionRequest): SelectionTarget[] {
   return picks.map((entry, index) => {
     const occurrence = (seen.get(entry.signal.conceptId) ?? 0) + 1;
     seen.set(entry.signal.conceptId, occurrence);
-    const reasons =
-      occurrence > 1 ? [...entry.reasons, "repeated-exposure"] : entry.reasons;
+    const reasons = occurrence > 1 ? [...entry.reasons, "repeated-exposure"] : entry.reasons;
     return {
       conceptId: entry.signal.conceptId,
       conceptName: entry.signal.name,

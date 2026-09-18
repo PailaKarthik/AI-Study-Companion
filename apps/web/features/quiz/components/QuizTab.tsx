@@ -39,7 +39,9 @@ export function QuizTab({ projectId }: { projectId: string }) {
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [result, setResult] = useState<QuizResult | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [review, setReview] = useState<{ attemptId: string; quizId: string; title: string } | null>(null);
+  const [review, setReview] = useState<{ attemptId: string; quizId: string; title: string } | null>(
+    null
+  );
   const start = useStartAttempt();
 
   function handleCreated() {
@@ -147,12 +149,7 @@ export function QuizTab({ projectId }: { projectId: string }) {
           title="No quizzes yet"
           message="Generate your first adaptive quiz from this project's materials. Questions target the concepts you need most."
           action={
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCreate(true)}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowCreate(true)}>
               <Play className="mr-2 h-4 w-4" aria-hidden /> Take a quiz
             </Button>
           }
@@ -188,8 +185,7 @@ export function QuizTab({ projectId }: { projectId: string }) {
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                       <Badge variant="secondary">{quiz.mode.toLowerCase().replace("_", " ")}</Badge>
                       <span className="tabular-nums">
-                        {quiz.questionCount}{" "}
-                        {quiz.questionCount === 1 ? "Question" : "Questions"}
+                        {quiz.questionCount} {quiz.questionCount === 1 ? "Question" : "Questions"}
                       </span>
                       <span className="tabular-nums">
                         {quiz.attemptCount} {quiz.attemptCount === 1 ? "attempt" : "attempts"}

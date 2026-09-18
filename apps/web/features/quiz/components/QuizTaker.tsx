@@ -176,151 +176,155 @@ export function QuizTaker({
 
       {current ? (
         <FadeIn key={current.id}>
-        <Card>
-          <CardContent className="flex flex-col gap-4 pt-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">
-                {current.type === "MCQ" ? "Multiple choice" : "Open-ended"}
-              </Badge>
-              {current.conceptName ? <Badge variant="outline">{current.conceptName}</Badge> : null}
-              {current.difficulty ? (
-                <Badge variant="outline">{current.difficulty.toLowerCase()}</Badge>
-              ) : null}
-            </div>
-            <p
-              ref={questionHeadingRef}
-              tabIndex={-1}
-              aria-live="polite"
-              className="text-base font-medium leading-relaxed outline-none"
-            >
-              {current.prompt}
-            </p>
+          <Card>
+            <CardContent className="flex flex-col gap-4 pt-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">
+                  {current.type === "MCQ" ? "Multiple choice" : "Open-ended"}
+                </Badge>
+                {current.conceptName ? (
+                  <Badge variant="outline">{current.conceptName}</Badge>
+                ) : null}
+                {current.difficulty ? (
+                  <Badge variant="outline">{current.difficulty.toLowerCase()}</Badge>
+                ) : null}
+              </div>
+              <p
+                ref={questionHeadingRef}
+                tabIndex={-1}
+                aria-live="polite"
+                className="text-base font-medium leading-relaxed outline-none"
+              >
+                {current.prompt}
+              </p>
 
-            {!current.answered ? (
-              current.type === "MCQ" && current.options ? (
-                <div
-                  className="flex flex-col gap-2"
-                  role="radiogroup"
-                  aria-label="Answer options"
-                  // Roving radio semantics: arrow keys move AND select,
-                  // matching native radio-group keyboard behavior.
-                  onKeyDown={(event) => {
-                    if (
-                      event.key !== "ArrowDown" &&
-                      event.key !== "ArrowUp" &&
-                      event.key !== "ArrowRight" &&
-                      event.key !== "ArrowLeft"
-                    ) {
-                      return;
-                    }
-                    event.preventDefault();
-                    const options = current.options ?? [];
-                    if (options.length === 0) return;
-                    const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
-                    const from = options.indexOf(selected[current.id] ?? "");
-                    const next = options[(from + step + options.length) % options.length];
-                    if (next !== undefined) {
-                      setSelected((s) => ({ ...s, [current.id]: next }));
-                      // Move DOM focus to the newly selected option.
-                      const group = event.currentTarget;
-                      const buttons = Array.from(
-                        group.querySelectorAll<HTMLButtonElement>('[role="radio"]')
-                      );
-                      buttons[options.indexOf(next)]?.focus();
-                    }
-                  }}
-                >
-                  {current.options.map((option, optionIndex) => {
-                    const active = selected[current.id] === option;
-                    // Roving tabindex: the selected option (or the first
-                    // when nothing is selected) is the single tab stop.
-                    const isTabStop = active || (!selected[current.id] && optionIndex === 0);
-                    return (
-                      <Button
-                        key={option}
-                        type="button"
-                        variant={active ? "default" : "outline"}
-                        role="radio"
-                        aria-checked={active}
-                        tabIndex={isTabStop ? 0 : -1}
-                        disabled={busy}
-                        className={cn(
-                          "h-auto justify-start whitespace-normal py-3 text-left",
-                          active && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                        )}
-                        onClick={() => setSelected((s) => ({ ...s, [current.id]: option }))}
-                      >
-                        <span className="flex w-full items-start gap-2">
-                          <span
-                            className={cn(
-                              "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
-                              active ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground/40"
-                            )}
-                            aria-hidden
-                          >
-                            {active ? <Check className="h-3 w-3" /> : null}
+              {!current.answered ? (
+                current.type === "MCQ" && current.options ? (
+                  <div
+                    className="flex flex-col gap-2"
+                    role="radiogroup"
+                    aria-label="Answer options"
+                    // Roving radio semantics: arrow keys move AND select,
+                    // matching native radio-group keyboard behavior.
+                    onKeyDown={(event) => {
+                      if (
+                        event.key !== "ArrowDown" &&
+                        event.key !== "ArrowUp" &&
+                        event.key !== "ArrowRight" &&
+                        event.key !== "ArrowLeft"
+                      ) {
+                        return;
+                      }
+                      event.preventDefault();
+                      const options = current.options ?? [];
+                      if (options.length === 0) return;
+                      const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+                      const from = options.indexOf(selected[current.id] ?? "");
+                      const next = options[(from + step + options.length) % options.length];
+                      if (next !== undefined) {
+                        setSelected((s) => ({ ...s, [current.id]: next }));
+                        // Move DOM focus to the newly selected option.
+                        const group = event.currentTarget;
+                        const buttons = Array.from(
+                          group.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                        );
+                        buttons[options.indexOf(next)]?.focus();
+                      }
+                    }}
+                  >
+                    {current.options.map((option, optionIndex) => {
+                      const active = selected[current.id] === option;
+                      // Roving tabindex: the selected option (or the first
+                      // when nothing is selected) is the single tab stop.
+                      const isTabStop = active || (!selected[current.id] && optionIndex === 0);
+                      return (
+                        <Button
+                          key={option}
+                          type="button"
+                          variant={active ? "default" : "outline"}
+                          role="radio"
+                          aria-checked={active}
+                          tabIndex={isTabStop ? 0 : -1}
+                          disabled={busy}
+                          className={cn(
+                            "h-auto justify-start whitespace-normal py-3 text-left",
+                            active && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                          )}
+                          onClick={() => setSelected((s) => ({ ...s, [current.id]: option }))}
+                        >
+                          <span className="flex w-full items-start gap-2">
+                            <span
+                              className={cn(
+                                "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+                                active
+                                  ? "border-primary-foreground bg-primary-foreground/20"
+                                  : "border-muted-foreground/40"
+                              )}
+                              aria-hidden
+                            >
+                              {active ? <Check className="h-3 w-3" /> : null}
+                            </span>
+                            <span className="min-w-0 flex-1">{option}</span>
                           </span>
-                          <span className="min-w-0 flex-1">{option}</span>
-                        </span>
-                      </Button>
-                    );
-                  })}
-                  <Button
-                    type="button"
-                    disabled={busy || !selected[current.id]}
-                    className="mt-1 w-fit"
-                    onClick={() => void handleSubmitMcq(current)}
-                  >
-                    {busy ? (
-                      <>
-                        <Spinner className="mr-2" label="Submitting…" /> Submitting…
-                      </>
-                    ) : (
-                      "Submit answer"
-                    )}
-                  </Button>
-                </div>
+                        </Button>
+                      );
+                    })}
+                    <Button
+                      type="button"
+                      disabled={busy || !selected[current.id]}
+                      className="mt-1 w-fit"
+                      onClick={() => void handleSubmitMcq(current)}
+                    >
+                      {busy ? (
+                        <>
+                          <Spinner className="mr-2" label="Submitting…" /> Submitting…
+                        </>
+                      ) : (
+                        "Submit answer"
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor={`answer-${current.id}`} className="sr-only">
+                      Your answer
+                    </label>
+                    <Textarea
+                      id={`answer-${current.id}`}
+                      rows={5}
+                      maxLength={4000}
+                      disabled={busy}
+                      value={drafts[current.id] ?? ""}
+                      onChange={(event) =>
+                        setDrafts((d) => ({ ...d, [current.id]: event.target.value }))
+                      }
+                      placeholder="Explain in your own words…"
+                    />
+                    <Button
+                      type="button"
+                      disabled={busy}
+                      className="w-fit"
+                      onClick={() => void handleSubmitOpen(current)}
+                    >
+                      {busy ? (
+                        <>
+                          <Spinner className="mr-2" label="Evaluating…" /> Submitting…
+                        </>
+                      ) : (
+                        "Submit answer"
+                      )}
+                    </Button>
+                  </div>
+                )
               ) : (
-                <div className="flex flex-col gap-2">
-                  <label htmlFor={`answer-${current.id}`} className="sr-only">
-                    Your answer
-                  </label>
-                  <Textarea
-                    id={`answer-${current.id}`}
-                    rows={5}
-                    maxLength={4000}
-                    disabled={busy}
-                    value={drafts[current.id] ?? ""}
-                    onChange={(event) =>
-                      setDrafts((d) => ({ ...d, [current.id]: event.target.value }))
-                    }
-                    placeholder="Explain in your own words…"
-                  />
-                  <Button
-                    type="button"
-                    disabled={busy}
-                    className="w-fit"
-                    onClick={() => void handleSubmitOpen(current)}
-                  >
-                    {busy ? (
-                      <>
-                        <Spinner className="mr-2" label="Evaluating…" /> Submitting…
-                      </>
-                    ) : (
-                      "Submit answer"
-                    )}
-                  </Button>
-                </div>
-              )
-            ) : (
-              <AnswerFeedback
-                question={current}
-                busy={busy}
-                onRetry={() => void handleRetry(current)}
-              />
-            )}
-          </CardContent>
-        </Card>
+                <AnswerFeedback
+                  question={current}
+                  busy={busy}
+                  onRetry={() => void handleRetry(current)}
+                />
+              )}
+            </CardContent>
+          </Card>
         </FadeIn>
       ) : null}
 
@@ -361,10 +365,7 @@ function AnswerFeedback({
   onRetry: () => void;
 }) {
   return (
-    <div
-      className="flex flex-col gap-2 rounded-xl border p-4"
-      aria-live="polite"
-    >
+    <div className="flex flex-col gap-2 rounded-xl border p-4" aria-live="polite">
       <p className="flex items-center gap-2 text-sm font-medium">
         {question.isCorrect ? (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-950 px-2.5 py-0.5 text-xs font-medium text-white dark:bg-white dark:text-slate-950">

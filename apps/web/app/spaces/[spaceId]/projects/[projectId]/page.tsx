@@ -18,12 +18,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { FadeIn } from "@/components/shared/motion";
 import { PageContainer } from "@/components/shared/page";
 import { SectionCard } from "@/components/shared/cards";
-import {
-  EmptyState,
-  ErrorState,
-  NotFoundState,
-  PageLoading,
-} from "@/components/shared/states";
+import { EmptyState, ErrorState, NotFoundState, PageLoading } from "@/components/shared/states";
 import { ProjectSkeleton } from "@/components/shared/skeletons";
 import { StatusBadge, projectStatusTone } from "@/components/shared/status";
 import { Badge } from "@/components/ui/badge";
@@ -108,8 +103,7 @@ function ProjectDashboard({ spaceId, projectId }: { spaceId: string; projectId: 
     if (tab === activeTab || tab === "overview" || tab === "analytics") return;
     if (prefetchedTabs.current.has(tab)) return;
     prefetchedTabs.current.add(tab);
-    const safe = (promise: Promise<unknown>) =>
-      promise.catch(() => undefined);
+    const safe = (promise: Promise<unknown>) => promise.catch(() => undefined);
     // NOTE: call as queryClient.prefetchQuery(...) — never destructure the
     // method, it needs its `this` binding.
     if (tab === "materials") {
@@ -278,25 +272,49 @@ function ProjectDashboard({ spaceId, projectId }: { spaceId: string; projectId: 
             </TabsList>
           </div>
 
-          <TabsContent value="overview" tabIndex={-1} className="animate-fade-slide-in motion-reduce:animate-none">
+          <TabsContent
+            value="overview"
+            tabIndex={-1}
+            className="animate-fade-slide-in motion-reduce:animate-none"
+          >
             <OverviewTabContent projectId={projectId} />
           </TabsContent>
-          <TabsContent value="materials" tabIndex={-1} className="animate-fade-slide-in motion-reduce:animate-none">
+          <TabsContent
+            value="materials"
+            tabIndex={-1}
+            className="animate-fade-slide-in motion-reduce:animate-none"
+          >
             <div className="flex flex-col gap-6">
               <MaterialsTab projectId={projectId} />
               <SearchPanel projectId={projectId} />
             </div>
           </TabsContent>
-          <TabsContent value="tutor" tabIndex={-1} className="animate-fade-slide-in motion-reduce:animate-none">
+          <TabsContent
+            value="tutor"
+            tabIndex={-1}
+            className="animate-fade-slide-in motion-reduce:animate-none"
+          >
             <TutorPanel projectId={projectId} />
           </TabsContent>
-          <TabsContent value="quiz" tabIndex={-1} className="animate-fade-slide-in motion-reduce:animate-none">
+          <TabsContent
+            value="quiz"
+            tabIndex={-1}
+            className="animate-fade-slide-in motion-reduce:animate-none"
+          >
             <QuizTab projectId={projectId} />
           </TabsContent>
-          <TabsContent value="growth" tabIndex={-1} className="animate-fade-slide-in motion-reduce:animate-none">
+          <TabsContent
+            value="growth"
+            tabIndex={-1}
+            className="animate-fade-slide-in motion-reduce:animate-none"
+          >
             <GrowthTab projectId={projectId} />
           </TabsContent>
-          <TabsContent value="analytics" tabIndex={-1} className="animate-fade-slide-in motion-reduce:animate-none">
+          <TabsContent
+            value="analytics"
+            tabIndex={-1}
+            className="animate-fade-slide-in motion-reduce:animate-none"
+          >
             <AnalyticsTab projectId={projectId} />
           </TabsContent>
         </Tabs>

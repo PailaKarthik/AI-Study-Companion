@@ -85,10 +85,10 @@ export function LearningSection() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <SectionCard
-        title="Mastery distribution"
-        description="Assessed concepts by status band."
-        icon={GraduationCap}
-      >
+          title="Mastery distribution"
+          description="Assessed concepts by status band."
+          icon={GraduationCap}
+        >
           <DistributionBars
             ariaLabel="System mastery distribution"
             slices={[

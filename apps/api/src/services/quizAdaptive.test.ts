@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
-import {
-  fitDifficulty,
-  selectTargets,
-  type ConceptSignalInput,
-} from "./quizAdaptive.js";
+import { fitDifficulty, selectTargets, type ConceptSignalInput } from "./quizAdaptive.js";
 
-function signal(overrides: Partial<ConceptSignalInput> & { conceptId: string }): ConceptSignalInput {
+function signal(
+  overrides: Partial<ConceptSignalInput> & { conceptId: string }
+): ConceptSignalInput {
   return {
     name: overrides.conceptId,
     masteryScore: null,
@@ -23,9 +21,7 @@ describe("fitDifficulty", () => {
   it("fits from aggregate evidence, never a single answer", () => {
     expect(fitDifficulty({ masteryScore: 0.2, accuracy: 0.9 }).difficulty).toBe("BEGINNER");
     expect(fitDifficulty({ masteryScore: 0.9, accuracy: 0.1 }).difficulty).toBe("ADVANCED");
-    expect(fitDifficulty({ masteryScore: null, accuracy: 0.5 }).difficulty).toBe(
-      "INTERMEDIATE"
-    );
+    expect(fitDifficulty({ masteryScore: null, accuracy: 0.5 }).difficulty).toBe("INTERMEDIATE");
   });
 
   it("uses a stated neutral default instead of fake mastery", () => {
@@ -39,8 +35,20 @@ describe("selectTargets", () => {
   it("prioritizes concept weakness over strength", () => {
     const targets = selectTargets({
       concepts: [
-        signal({ conceptId: "strong", accuracy: 0.95, recentCorrect: 5, isNew: false, msSinceLastAnswered: 1000 }),
-        signal({ conceptId: "weak", accuracy: 0.2, recentIncorrect: 3, isNew: false, msSinceLastAnswered: 1000 }),
+        signal({
+          conceptId: "strong",
+          accuracy: 0.95,
+          recentCorrect: 5,
+          isNew: false,
+          msSinceLastAnswered: 1000,
+        }),
+        signal({
+          conceptId: "weak",
+          accuracy: 0.2,
+          recentIncorrect: 3,
+          isNew: false,
+          msSinceLastAnswered: 1000,
+        }),
       ],
       count: 1,
     });
@@ -53,8 +61,21 @@ describe("selectTargets", () => {
     // to ADVANCED — difficulty comes from aggregate evidence per concept.
     const targets = selectTargets({
       concepts: [
-        signal({ conceptId: "a", accuracy: 1, recentCorrect: 5, isNew: false, msSinceLastAnswered: 1000 }),
-        signal({ conceptId: "b", accuracy: 0.6, recentCorrect: 3, recentIncorrect: 2, isNew: false, msSinceLastAnswered: 1000 }),
+        signal({
+          conceptId: "a",
+          accuracy: 1,
+          recentCorrect: 5,
+          isNew: false,
+          msSinceLastAnswered: 1000,
+        }),
+        signal({
+          conceptId: "b",
+          accuracy: 0.6,
+          recentCorrect: 3,
+          recentIncorrect: 2,
+          isNew: false,
+          msSinceLastAnswered: 1000,
+        }),
       ],
       count: 2,
     });
@@ -66,7 +87,14 @@ describe("selectTargets", () => {
   it("one wrong answer does not force the easiest level everywhere", () => {
     const targets = selectTargets({
       concepts: [
-        signal({ conceptId: "slip", accuracy: 0.9, recentCorrect: 4, recentIncorrect: 1, isNew: false, msSinceLastAnswered: 1000 }),
+        signal({
+          conceptId: "slip",
+          accuracy: 0.9,
+          recentCorrect: 4,
+          recentIncorrect: 1,
+          isNew: false,
+          msSinceLastAnswered: 1000,
+        }),
         signal({ conceptId: "new", isNew: true }),
       ],
       count: 2,
@@ -79,7 +107,13 @@ describe("selectTargets", () => {
   it("boosts prerequisites of weak concepts", () => {
     const targets = selectTargets({
       concepts: [
-        signal({ conceptId: "foundation", accuracy: 0.8, isNew: false, msSinceLastAnswered: 1000, supportsWeakConcept: true }),
+        signal({
+          conceptId: "foundation",
+          accuracy: 0.8,
+          isNew: false,
+          msSinceLastAnswered: 1000,
+          supportsWeakConcept: true,
+        }),
         signal({ conceptId: "neutral", accuracy: 0.8, isNew: false, msSinceLastAnswered: 1000 }),
       ],
       count: 1,
@@ -91,7 +125,13 @@ describe("selectTargets", () => {
   it("prefers unseen concepts over recently drilled ones", () => {
     const targets = selectTargets({
       concepts: [
-        signal({ conceptId: "drilled", accuracy: 0.7, recentCorrect: 2, isNew: false, msSinceLastAnswered: 60_000 }),
+        signal({
+          conceptId: "drilled",
+          accuracy: 0.7,
+          recentCorrect: 2,
+          isNew: false,
+          msSinceLastAnswered: 60_000,
+        }),
         signal({ conceptId: "unseen", accuracy: null }),
       ],
       count: 1,
@@ -101,7 +141,11 @@ describe("selectTargets", () => {
 
   it("deals round-robin for diversity before repeating concepts", () => {
     const targets = selectTargets({
-      concepts: [signal({ conceptId: "a" }), signal({ conceptId: "b" }), signal({ conceptId: "c" })],
+      concepts: [
+        signal({ conceptId: "a" }),
+        signal({ conceptId: "b" }),
+        signal({ conceptId: "c" }),
+      ],
       count: 3,
     });
     expect(new Set(targets.map((t) => t.conceptId)).size).toBe(3);
@@ -110,7 +154,15 @@ describe("selectTargets", () => {
 
   it("repeats weak concepts deliberately when slots exceed concepts", () => {
     const targets = selectTargets({
-      concepts: [signal({ conceptId: "only", accuracy: 0.1, recentIncorrect: 4, isNew: false, msSinceLastAnswered: 1000 })],
+      concepts: [
+        signal({
+          conceptId: "only",
+          accuracy: 0.1,
+          recentIncorrect: 4,
+          isNew: false,
+          msSinceLastAnswered: 1000,
+        }),
+      ],
       count: 3,
     });
     expect(targets).toHaveLength(3);

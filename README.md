@@ -159,8 +159,9 @@ Full per-service tables: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Every varia
 
 ## Testing
 
-- **Unit/integration (Vitest):** parsers, quiz selector + count guarantee, prompts/dedup, validation, API service logic. DB-backed suites auto-skip without `TEST_DATABASE_URL` and run in CI.
+- **Unit/integration (Vitest):** parsers, quiz selector + count guarantee, prompts/dedup, validation, API service logic. DB-backed suites auto-skip without `TEST_DATABASE_URL` (including in CI, which provisions no database).
 - **E2E (Playwright/Chromium):** `apps/web/tests/e2e` — auth UI runs backend-free; backend flows self-skip unless `E2E_WITH_BACKEND=1` with API + migrated DB running.
+- **CI** (`.github/workflows/ci.yml`): install → Prisma generate → `format:check` → `typecheck` → `test` → `build`. No external services required.
 - **Production build** (`next build` + `tsc`) is part of verification before every push.
 
 ## Deployment (free-tier, 512 MB)
@@ -172,3 +173,7 @@ Full procedure (platforms, env tables, migrations, smoke test, 512 MB budget rul
 ## Docs
 
 Product and ops docs live in [`docs/`](docs/): `ARCHITECTURE`, `API`, `DATABASE`, `DEVELOPMENT`, `DEPLOYMENT`, `SECURITY`, `RELIABILITY`, `LEARNING_LOOP`, `QUIZZES`, `MASTERY`, `SEARCH_ARCHITECTURE`, `EVALUATION`, `LIMITATIONS`, `FUTURE_IMPROVEMENTS`, plus `AI_DEVELOPMENT` (AI used to build vs. AI used by the product) and `DEVELOPMENT_PROMPTS` (the actual AI-assistant prompt record).
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

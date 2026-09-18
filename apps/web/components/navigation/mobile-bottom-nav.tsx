@@ -40,7 +40,9 @@ export function MobileBottomNav({ user }: { user: CurrentUser | null | undefined
               <span
                 className={cn(
                   "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
-                  active ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "bg-transparent"
+                  active
+                    ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                    : "bg-transparent"
                 )}
                 aria-hidden
               >

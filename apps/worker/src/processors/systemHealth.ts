@@ -18,7 +18,7 @@ export interface JobLogContext {
  */
 export async function processSystemHealth(
   data: SystemHealthJobData,
-  ctx: JobLogContext,
+  ctx: JobLogContext
 ): Promise<SystemHealthJobResult> {
   const startedAt = Date.now();
   const correlationId = data.correlationId || randomUUID();
@@ -32,7 +32,7 @@ export async function processSystemHealth(
       correlationId,
       status: "started",
     },
-    "Processing system.health job",
+    "Processing system.health job"
   );
 
   // Simulate a trivial check (no external I/O, no setTimeout mocks of business logic).
@@ -53,7 +53,7 @@ export async function processSystemHealth(
       durationMs: Date.now() - startedAt,
       status: "completed",
     },
-    "Completed system.health job",
+    "Completed system.health job"
   );
 
   return result;

@@ -253,7 +253,19 @@ describe.skipIf(!hasTestDb)("material upload/download/delete (Neon Object Storag
     // PostgreSQL holds the reference only: the row is metadata-shaped,
     // with no bytes/base64/payload field of any kind.
     expect(Object.keys(blob ?? {}).sort()).toEqual(
-      ["checksum", "createdAt", "height", "id", "kind", "materialId", "mimeType", "pageNumber", "sizeBytes", "storageKey", "width"].sort()
+      [
+        "checksum",
+        "createdAt",
+        "height",
+        "id",
+        "kind",
+        "materialId",
+        "mimeType",
+        "pageNumber",
+        "sizeBytes",
+        "storageKey",
+        "width",
+      ].sort()
     );
     const material = await db.material.findUniqueOrThrow({ where: { id: materialId } });
     expect(material.storageProvider).toBe("NEON_OBJECT_STORAGE");

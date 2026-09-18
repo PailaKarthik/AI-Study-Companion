@@ -60,7 +60,7 @@ export function pushToast(input: ToastInput): string {
   if (toast.duration > 0) {
     timers.set(
       id,
-      setTimeout(() => dismissToast(id), toast.duration),
+      setTimeout(() => dismissToast(id), toast.duration)
     );
   }
   emit();

@@ -32,12 +32,12 @@ w = min(maxSingle, base(kind) × difficulty × quality × recency)
 
 ## Weights (starting values, documented as such)
 
-| Source | Base weight | Quality |
-|---|---|---|
-| MCQ (`QUIZ`) | 0.45 | 1 (deterministic key) |
-| Open-ended (`OPEN_ENDED_ASSESSMENT`) | 0.35 | evaluator confidence |
-| Learning activity | 0.10 | fixed, low |
-| Grounded tutor engagement | 0.10 | neutral (score-neutral markers) |
+| Source                               | Base weight | Quality                         |
+| ------------------------------------ | ----------- | ------------------------------- |
+| MCQ (`QUIZ`)                         | 0.45        | 1 (deterministic key)           |
+| Open-ended (`OPEN_ENDED_ASSESSMENT`) | 0.35        | evaluator confidence            |
+| Learning activity                    | 0.10        | fixed, low                      |
+| Grounded tutor engagement            | 0.10        | neutral (score-neutral markers) |
 
 Assessment evidence (0.80 combined) structurally dominates passive
 signals: no volume of chat or clicks can overwhelm graded proof.
@@ -48,7 +48,7 @@ never treated as equivalent to a deterministic answer key.
 
 Correct: BEGINNER 0.8, INTERMEDIATE 1.0, ADVANCED 1.25 (ungraded: 1.0).
 Incorrect: BEGINNER 1.25, INTERMEDIATE 1.0, ADVANCED 0.8. Difficulty
-scales the *weight*, never the score: hard-correct moves mastery more,
+scales the _weight_, never the score: hard-correct moves mastery more,
 easy-wrong signals a deeper gap, hard-wrong is discounted as expected
 struggle. `MASTERY_MAX_SINGLE_WEIGHT` (0.6) caps any single item.
 

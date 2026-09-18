@@ -27,7 +27,7 @@ Classification (defaults):
 
 Mastery-event trajectory (primary), recent response accuracy, recent
 incorrect count, evidence depth. Concept relations feed the
-*recommendation* layer (prerequisite support), not the trend itself.
+_recommendation_ layer (prerequisite support), not the trend itself.
 
 ## Confidence
 

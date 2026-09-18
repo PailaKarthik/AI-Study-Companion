@@ -16,7 +16,13 @@ export function PageContainer({
   narrow?: boolean;
 }) {
   return (
-    <div className={cn("mx-auto w-full flex-1 px-4 py-8 sm:px-6 lg:px-8", narrow ? "max-w-3xl" : "max-w-6xl", className)}>
+    <div
+      className={cn(
+        "mx-auto w-full flex-1 px-4 py-8 sm:px-6 lg:px-8",
+        narrow ? "max-w-3xl" : "max-w-6xl",
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -56,7 +62,10 @@ export function PageSection({
   className?: string;
 }) {
   return (
-    <section className={cn("flex flex-col gap-4", className)} aria-label={typeof title === "string" ? title : undefined}>
+    <section
+      className={cn("flex flex-col gap-4", className)}
+      aria-label={typeof title === "string" ? title : undefined}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <h2 className="text-xl font-semibold tracking-tight">{title}</h2>

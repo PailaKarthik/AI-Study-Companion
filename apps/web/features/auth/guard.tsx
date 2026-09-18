@@ -42,7 +42,8 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { data: user, isPending, isError } = useCurrentUser();
   const status = getAuthStatus({ isPending, isError, user });
-  const denied = status === "unauthenticated" || (status === "authenticated" && user?.role !== "ADMIN");
+  const denied =
+    status === "unauthenticated" || (status === "authenticated" && user?.role !== "ADMIN");
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");

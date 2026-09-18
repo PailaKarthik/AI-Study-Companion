@@ -139,12 +139,13 @@ function SpaceContent({ spaceId }: { spaceId: string }) {
               <div className="overflow-x-auto pb-1">
                 <TabsList aria-label="Filter projects by status">
                   {STATUS_TABS.map((tab) => {
-                    const count =
-                      tab.id === "ALL"
-                        ? counts.data?.all
-                        : counts.data?.[tab.id];
+                    const count = tab.id === "ALL" ? counts.data?.all : counts.data?.[tab.id];
                     return (
-                      <TabsTrigger key={tab.id} value={tab.id} className="gap-1.5 data-[state=active]:bg-slate-950 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-950">
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="gap-1.5 data-[state=active]:bg-slate-950 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-950"
+                      >
                         {tab.label}
                         <span
                           className="rounded-full bg-slate-950/10 px-1.5 py-0.5 text-[11px] tabular-nums dark:bg-white/15"

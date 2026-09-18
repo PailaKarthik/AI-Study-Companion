@@ -25,30 +25,25 @@ import { OverviewSection } from "@/features/admin";
  * Heavy admin sections load per tab: each is its own chunk fetched on
  * first visit, with skeletons so tab switches feel instant.
  */
-const UsersSection = dynamic(
-  () => import("@/features/admin").then((m) => m.UsersSection),
-  { loading: () => <CardSkeleton /> }
-);
-const ActivitySection = dynamic(
-  () => import("@/features/admin").then((m) => m.ActivitySection),
-  { loading: () => <CardSkeleton /> }
-);
-const LearningSection = dynamic(
-  () => import("@/features/admin").then((m) => m.LearningSection),
-  { loading: () => <CardSkeleton /> }
-);
-const AIUsageSection = dynamic(
-  () => import("@/features/admin").then((m) => m.AIUsageSection),
-  { loading: () => <CardSkeleton /> }
-);
+const UsersSection = dynamic(() => import("@/features/admin").then((m) => m.UsersSection), {
+  loading: () => <CardSkeleton />,
+});
+const ActivitySection = dynamic(() => import("@/features/admin").then((m) => m.ActivitySection), {
+  loading: () => <CardSkeleton />,
+});
+const LearningSection = dynamic(() => import("@/features/admin").then((m) => m.LearningSection), {
+  loading: () => <CardSkeleton />,
+});
+const AIUsageSection = dynamic(() => import("@/features/admin").then((m) => m.AIUsageSection), {
+  loading: () => <CardSkeleton />,
+});
 const AIEvaluationsSection = dynamic(
   () => import("@/features/admin").then((m) => m.AIEvaluationsSection),
   { loading: () => <CardSkeleton /> }
 );
-const JobsSection = dynamic(
-  () => import("@/features/admin").then((m) => m.JobsSection),
-  { loading: () => <CardSkeleton /> }
-);
+const JobsSection = dynamic(() => import("@/features/admin").then((m) => m.JobsSection), {
+  loading: () => <CardSkeleton />,
+});
 const SystemHealthSection = dynamic(
   () => import("@/features/admin").then((m) => m.SystemHealthSection),
   { loading: () => <CardSkeleton /> }
@@ -111,7 +106,11 @@ function AdminDashboard() {
               {SECTIONS.map((section) => {
                 const Icon = section.icon;
                 return (
-                  <TabsTrigger key={section.id} value={section.id} className="gap-1.5 data-[state=active]:bg-slate-950 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-950">
+                  <TabsTrigger
+                    key={section.id}
+                    value={section.id}
+                    className="gap-1.5 data-[state=active]:bg-slate-950 data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-slate-950"
+                  >
                     <Icon className="h-4 w-4" aria-hidden />
                     {section.label}
                   </TabsTrigger>

@@ -8,7 +8,9 @@ export function ApiErrorAlert({ message, requestId }: { message: string; request
       <AlertTitle>Request failed</AlertTitle>
       <AlertDescription>
         {message}
-        {requestId ? <span className="mt-1 block font-mono text-xs opacity-70">Request ID: {requestId}</span> : null}
+        {requestId ? (
+          <span className="mt-1 block font-mono text-xs opacity-70">Request ID: {requestId}</span>
+        ) : null}
       </AlertDescription>
     </Alert>
   );

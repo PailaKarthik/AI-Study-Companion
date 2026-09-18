@@ -2,6 +2,7 @@
   "name": "ai-study-companion",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "AI Study Companion — monorepo foundation (Next.js + Express + Worker + Prisma)",
   "packageManager": "pnpm@9.15.9",
   "engines": {

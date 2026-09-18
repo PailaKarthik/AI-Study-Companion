@@ -1,4 +1,18 @@
-import { AlertTriangle, Ban, BarChart3, Brain, FileText, FolderKanban, Inbox, KeyRound, Layers, SearchX, Sparkles, Timer, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  Ban,
+  BarChart3,
+  Brain,
+  FileText,
+  FolderKanban,
+  Inbox,
+  KeyRound,
+  Layers,
+  SearchX,
+  Sparkles,
+  Timer,
+  TrendingUp,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

@@ -16,7 +16,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { id: "home", label: "Home", href: "/", icon: Home },
-  { id: "spaces", label: "Spaces", href: "/spaces", icon: Layers }
+  { id: "spaces", label: "Spaces", href: "/spaces", icon: Layers },
 ];
 
 export const ADMIN_NAV_ITEM: NavItem = {
@@ -47,7 +47,9 @@ export function matchNavItem(pathname: string, items: NavItem[] = NAV_ITEMS): st
   for (const item of items) {
     if (!item.href) continue;
     const matches =
-      item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
+      item.href === "/"
+        ? pathname === "/"
+        : pathname === item.href || pathname.startsWith(`${item.href}/`);
     if (matches && (!best?.href || item.href.length > (best.href?.length ?? 0))) {
       best = item;
     }

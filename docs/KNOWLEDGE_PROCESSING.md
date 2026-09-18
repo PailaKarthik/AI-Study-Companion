@@ -46,7 +46,7 @@ mirrored by the worker.
 - sharp embedded-image pass: image XObjects resolve via `page.objs`
   (no canvas), convert to PNG in memory, uploaded as bucket objects
   keyed `users/<u>/spaces/<s>/projects/<p>/materials/<m>/images/
-  page-<n>-<hash>.png` with metadata rows (key, MIME, size, checksum,
+page-<n>-<hash>.png` with metadata rows (key, MIME, size, checksum,
   page, dimensions) in PostgreSQL.
   Images are capped (`DOCUMENT_MAX_IMAGES_PER_MATERIAL`, default 50);
   overflow counts as skipped. Image bytes are never sent to Gemini and
@@ -170,4 +170,3 @@ identity/checksum and process independently. Deleting a material
 removes metadata (pages + chunks + vectors + object references via
 relational `onDelete: Cascade`) and then every referenced bucket
 object explicitly (tolerant of already-missing keys).
-

@@ -42,16 +42,16 @@ are recorded as `ASSESSMENT` usage `FAILED` — never persisted.
 
 ## Persistence mapping
 
-| Model output | Stored as |
-|---|---|
-| `score` | `QuizResponse.score`, `Assessment.score` |
-| `correct` | `QuizResponse.isCorrect`, `Assessment.accuracy` (1/0) |
-| coverage ratio | `Assessment.relevance` |
-| `reasoningQuality` | `Assessment.reasoningQuality` (1 / 0.5 / 0) |
-| covered/missing lists | `Assessment.coveredConcepts/missingConcepts` (JSON) |
-| feedback | both rows |
-| confidence, misconceptions, label | `Assessment.evaluatorMetadata` (JSON) |
-| model name | `Assessment.evaluatorModel` |
+| Model output                      | Stored as                                             |
+| --------------------------------- | ----------------------------------------------------- |
+| `score`                           | `QuizResponse.score`, `Assessment.score`              |
+| `correct`                         | `QuizResponse.isCorrect`, `Assessment.accuracy` (1/0) |
+| coverage ratio                    | `Assessment.relevance`                                |
+| `reasoningQuality`                | `Assessment.reasoningQuality` (1 / 0.5 / 0)           |
+| covered/missing lists             | `Assessment.coveredConcepts/missingConcepts` (JSON)   |
+| feedback                          | both rows                                             |
+| confidence, misconceptions, label | `Assessment.evaluatorMetadata` (JSON)                 |
+| model name                        | `Assessment.evaluatorModel`                           |
 
 Concept linkage reuses the question's stored `conceptId` only —
 model-emitted ids are never persisted. Source references shown to the

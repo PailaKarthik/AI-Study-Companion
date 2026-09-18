@@ -28,10 +28,7 @@ import type { ConceptDifficulty, MasteryStatus } from "@ai-study-companion/share
  */
 
 export type EvidenceKind =
-  | "QUIZ"
-  | "OPEN_ENDED_ASSESSMENT"
-  | "TUTOR_INTERACTION"
-  | "LEARNING_ACTIVITY";
+  "QUIZ" | "OPEN_ENDED_ASSESSMENT" | "TUTOR_INTERACTION" | "LEARNING_ACTIVITY";
 
 export interface EvidenceItem {
   kind: EvidenceKind;
@@ -94,10 +91,7 @@ function clamp01(value: number): number {
  * strong evidence; failing easy material is a strong gap signal. Failing
  * hard material is weak negative evidence (expected struggle).
  */
-export function difficultyFactor(
-  difficulty: ConceptDifficulty | null,
-  correct: boolean
-): number {
+export function difficultyFactor(difficulty: ConceptDifficulty | null, correct: boolean): number {
   if (correct) {
     switch (difficulty) {
       case "ADVANCED":
@@ -146,11 +140,7 @@ function baseWeight(kind: EvidenceKind, weights: MasteryWeights): number {
   }
 }
 
-export function effectiveWeight(
-  item: EvidenceItem,
-  weights: MasteryWeights,
-  now: Date
-): number {
+export function effectiveWeight(item: EvidenceItem, weights: MasteryWeights, now: Date): number {
   const raw =
     baseWeight(item.kind, weights) *
     difficultyFactor(item.difficulty, item.correct) *

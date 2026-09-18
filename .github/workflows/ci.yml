@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Prisma client generation needs no database connection.
+      - run: pnpm --filter @ai-study-companion/db generate
+
+      - run: pnpm format:check
+      - run: pnpm typecheck
+
+      # DB-backed suites self-skip without TEST_DATABASE_URL;
+      # everything else must pass with zero external services.
+      - run: pnpm test
+
+      - run: pnpm build

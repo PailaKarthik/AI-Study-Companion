@@ -165,4 +165,3 @@ describe.skipIf(!hasTestDb)("ai.evaluate processor (isolated test DB)", () => {
     expect(aiEvaluateJobId("quiz", "abc")).toBe("ai-eval-quiz-abc");
   });
 });
-

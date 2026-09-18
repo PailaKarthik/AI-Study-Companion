@@ -76,10 +76,7 @@ export const getQuizHandler = [
   requireAuth,
   validateParams(quizIdParamSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    const data = await getQuiz(
-      getAuth(req).id,
-      (req.params as { quizId: string }).quizId
-    );
+    const data = await getQuiz(getAuth(req).id, (req.params as { quizId: string }).quizId);
     res.status(200).json(toSuccess(data, getRequestId(req)));
   }),
 ];
@@ -106,10 +103,7 @@ export const getAttemptHandler = [
   requireAuth,
   validateParams(attemptIdParamSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    const data = await getAttempt(
-      getAuth(req).id,
-      (req.params as { attemptId: string }).attemptId
-    );
+    const data = await getAttempt(getAuth(req).id, (req.params as { attemptId: string }).attemptId);
     res.status(200).json(toSuccess(data, getRequestId(req)));
   }),
 ];

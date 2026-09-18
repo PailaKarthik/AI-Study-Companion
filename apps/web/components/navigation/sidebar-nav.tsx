@@ -21,7 +21,9 @@ function NavLink({
       <span
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
-          active ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "bg-muted text-muted-foreground"
+          active
+            ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+            : "bg-muted text-muted-foreground"
         )}
         aria-hidden
       >
@@ -43,7 +45,11 @@ function NavLink({
   ) : null;
   if (item.comingSoon || !item.href) {
     return (
-      <span className={cn(classes, "cursor-default opacity-60")} aria-disabled="true" title={`${item.label} — coming soon`}>
+      <span
+        className={cn(classes, "cursor-default opacity-60")}
+        aria-disabled="true"
+        title={`${item.label} — coming soon`}
+      >
         {indicator}
         {content}
       </span>
@@ -82,7 +88,12 @@ export function SidebarNav({
         {items
           .filter((i) => i.id !== "admin")
           .map((item) => (
-            <NavLink key={item.id} item={item} active={item.id === activeId} onNavigate={onNavigate} />
+            <NavLink
+              key={item.id}
+              item={item}
+              active={item.id === activeId}
+              onNavigate={onNavigate}
+            />
           ))}
       </div>
       {items.some((i) => i.id === "admin") ? (
@@ -93,7 +104,12 @@ export function SidebarNav({
           {items
             .filter((i) => i.id === "admin")
             .map((item) => (
-              <NavLink key={item.id} item={item} active={item.id === activeId} onNavigate={onNavigate} />
+              <NavLink
+                key={item.id}
+                item={item}
+                active={item.id === activeId}
+                onNavigate={onNavigate}
+              />
             ))}
         </div>
       ) : null}

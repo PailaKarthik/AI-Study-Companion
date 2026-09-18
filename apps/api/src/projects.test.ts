@@ -141,11 +141,9 @@ describe.skipIf(!hasTestDb)("projects API (isolated test DB)", () => {
       .send({ status: "ARCHIVED" })
       .expect(200);
 
-    const counts = await authedGet(
-      app,
-      `/api/spaces/${spaceA}/projects/counts`,
-      cookieA
-    ).expect(200);
+    const counts = await authedGet(app, `/api/spaces/${spaceA}/projects/counts`, cookieA).expect(
+      200
+    );
     expect(counts.body.data).toEqual({ all: 3, ACTIVE: 1, COMPLETED: 1, ARCHIVED: 1 });
 
     const completed = await authedGet(

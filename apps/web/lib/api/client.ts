@@ -55,7 +55,7 @@ function newRequestId(): string {
 
 export async function apiRequest<T>(
   path: string,
-  options: ApiRequestOptions = {},
+  options: ApiRequestOptions = {}
 ): Promise<{ data: T; requestId: string }> {
   const { body, requestId = newRequestId(), headers, signal, ...rest } = options;
 
@@ -71,8 +71,7 @@ export async function apiRequest<T>(
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  const responseRequestId =
-    res.headers.get(REQUEST_ID_HEADER) ?? requestId;
+  const responseRequestId = res.headers.get(REQUEST_ID_HEADER) ?? requestId;
 
   let json: unknown = null;
   try {

@@ -38,7 +38,13 @@ function item(overrides: Partial<EvidenceItem> = {}): EvidenceItem {
 describe("applyEvidence", () => {
   it("returns null for empty evidence (no event, no write)", () => {
     expect(
-      applyEvidence({ oldMastery: 0.5, oldEvidenceCount: 3, evidence: [], weights: WEIGHTS, now: NOW })
+      applyEvidence({
+        oldMastery: 0.5,
+        oldEvidenceCount: 3,
+        evidence: [],
+        weights: WEIGHTS,
+        now: NOW,
+      })
     ).toBeNull();
   });
 
@@ -71,40 +77,54 @@ describe("applyEvidence", () => {
 
   it("weights hard-correct above easy-correct", () => {
     const hard = applyEvidence({
-      oldMastery: 0.5, oldEvidenceCount: 2,
-      evidence: [item({ difficulty: "ADVANCED" })], weights: WEIGHTS, now: NOW,
+      oldMastery: 0.5,
+      oldEvidenceCount: 2,
+      evidence: [item({ difficulty: "ADVANCED" })],
+      weights: WEIGHTS,
+      now: NOW,
     });
     const easy = applyEvidence({
-      oldMastery: 0.5, oldEvidenceCount: 2,
-      evidence: [item({ difficulty: "BEGINNER" })], weights: WEIGHTS, now: NOW,
+      oldMastery: 0.5,
+      oldEvidenceCount: 2,
+      evidence: [item({ difficulty: "BEGINNER" })],
+      weights: WEIGHTS,
+      now: NOW,
     });
     expect(hard?.newMastery).toBeGreaterThan(easy?.newMastery ?? 0);
   });
 
   it("treats easy-wrong as a stronger gap than hard-wrong", () => {
     const easyWrong = applyEvidence({
-      oldMastery: 0.5, oldEvidenceCount: 2,
+      oldMastery: 0.5,
+      oldEvidenceCount: 2,
       evidence: [item({ score: 0, correct: false, difficulty: "BEGINNER" })],
-      weights: WEIGHTS, now: NOW,
+      weights: WEIGHTS,
+      now: NOW,
     });
     const hardWrong = applyEvidence({
-      oldMastery: 0.5, oldEvidenceCount: 2,
+      oldMastery: 0.5,
+      oldEvidenceCount: 2,
       evidence: [item({ score: 0, correct: false, difficulty: "ADVANCED" })],
-      weights: WEIGHTS, now: NOW,
+      weights: WEIGHTS,
+      now: NOW,
     });
     expect(easyWrong?.newMastery).toBeLessThan(hardWrong?.newMastery ?? 1);
   });
 
   it("discounts uncertain open-ended evidence by evaluator confidence", () => {
     const sure = applyEvidence({
-      oldMastery: 0.5, oldEvidenceCount: 2,
+      oldMastery: 0.5,
+      oldEvidenceCount: 2,
       evidence: [item({ kind: "OPEN_ENDED_ASSESSMENT", score: 0.8, quality: 0.9 })],
-      weights: WEIGHTS, now: NOW,
+      weights: WEIGHTS,
+      now: NOW,
     });
     const unsure = applyEvidence({
-      oldMastery: 0.5, oldEvidenceCount: 2,
+      oldMastery: 0.5,
+      oldEvidenceCount: 2,
       evidence: [item({ kind: "OPEN_ENDED_ASSESSMENT", score: 0.8, quality: 0.2 })],
-      weights: WEIGHTS, now: NOW,
+      weights: WEIGHTS,
+      now: NOW,
     });
     expect(sure?.newMastery).toBeGreaterThan(unsure?.newMastery ?? 0);
   });
@@ -132,9 +152,11 @@ describe("applyEvidence", () => {
     let count = 2;
     for (let i = 0; i < 10; i += 1) {
       const out = applyEvidence({
-        oldMastery: mastery, oldEvidenceCount: count,
+        oldMastery: mastery,
+        oldEvidenceCount: count,
         evidence: [item({ score: 0, correct: false, difficulty: "INTERMEDIATE" })],
-        weights: WEIGHTS, now: NOW,
+        weights: WEIGHTS,
+        now: NOW,
       });
       mastery = out?.newMastery ?? mastery;
       count = out?.evidenceCount ?? count;
@@ -148,9 +170,11 @@ describe("applyEvidence", () => {
     let count = 0;
     for (let i = 0; i < 6; i += 1) {
       const out = applyEvidence({
-        oldMastery: mastery, oldEvidenceCount: count,
+        oldMastery: mastery,
+        oldEvidenceCount: count,
         evidence: [item({ score: 1, difficulty: "BEGINNER" })],
-        weights: WEIGHTS, now: NOW,
+        weights: WEIGHTS,
+        now: NOW,
       });
       mastery = out?.newMastery ?? mastery;
       count = out?.evidenceCount ?? count;
@@ -162,9 +186,11 @@ describe("applyEvidence", () => {
 
   it("clamps scores into [0, 1] always", () => {
     const out = applyEvidence({
-      oldMastery: 0.99, oldEvidenceCount: 9,
+      oldMastery: 0.99,
+      oldEvidenceCount: 9,
       evidence: [item({ score: 2 }), item({ score: -5, correct: false })],
-      weights: WEIGHTS, now: NOW,
+      weights: WEIGHTS,
+      now: NOW,
     });
     expect(out?.newMastery).toBeGreaterThanOrEqual(0);
     expect(out?.newMastery).toBeLessThanOrEqual(1);
@@ -184,7 +210,9 @@ describe("recencyFactor", () => {
 describe("difficultyFactor", () => {
   it("is asymmetric by design", () => {
     expect(difficultyFactor("ADVANCED", true)).toBeGreaterThan(difficultyFactor("BEGINNER", true));
-    expect(difficultyFactor("BEGINNER", false)).toBeGreaterThan(difficultyFactor("ADVANCED", false));
+    expect(difficultyFactor("BEGINNER", false)).toBeGreaterThan(
+      difficultyFactor("ADVANCED", false)
+    );
     expect(difficultyFactor(null, true)).toBe(1);
   });
 });

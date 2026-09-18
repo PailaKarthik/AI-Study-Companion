@@ -147,7 +147,10 @@ function UserJourney({ userId, onBack }: { userId: string; onBack: () => void })
                   {detail.data.email}
                 </p>
                 <div className="mt-1 flex flex-wrap items-center gap-2 ">
-                  <Badge className="text-slate-400" variant={detail.data.role === "ADMIN" ? "default" : "outline"}>
+                  <Badge
+                    className="text-slate-400"
+                    variant={detail.data.role === "ADMIN" ? "default" : "outline"}
+                  >
                     {detail.data.role}
                   </Badge>
                   <span className="text-xs text-slate-400 dark:text-slate-500">
@@ -212,7 +215,11 @@ function UserJourney({ userId, onBack }: { userId: string; onBack: () => void })
               </ul>
             )}
           </SectionCard>
-          <SectionCard title="Recent activity" description="Latest events for this account." icon={Activity}>
+          <SectionCard
+            title="Recent activity"
+            description="Latest events for this account."
+            icon={Activity}
+          >
             {detail.data.recentActivity.length === 0 ? (
               <EmptyState title="No activity" message="Nothing recorded for this user yet." />
             ) : (

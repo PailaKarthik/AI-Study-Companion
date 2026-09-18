@@ -81,4 +81,3 @@ Register/login → argon2id verify → HMAC session row (7d) + httpOnly cookie
   → logout revokes by hash (idempotent). Expired sessions pruned + active
   sessions capped (20) on every login.
 ```
-

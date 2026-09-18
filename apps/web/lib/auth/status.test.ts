@@ -10,14 +10,12 @@ describe("getAuthStatus", () => {
   });
 
   it("reports unauthenticated for a resolved null user", () => {
-    expect(getAuthStatus({ isPending: false, isError: false, user: null })).toBe(
-      "unauthenticated",
-    );
+    expect(getAuthStatus({ isPending: false, isError: false, user: null })).toBe("unauthenticated");
   });
 
   it("fails closed to unauthenticated when the query errors", () => {
     expect(getAuthStatus({ isPending: false, isError: true, user: undefined })).toBe(
-      "unauthenticated",
+      "unauthenticated"
     );
   });
 

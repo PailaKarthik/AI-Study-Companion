@@ -42,10 +42,9 @@ export async function fetchProjects(
 
 /** Real per-status counts for the All/Active/Completed/Archived filter. */
 export async function fetchProjectStatusCounts(spaceId: string, signal?: AbortSignal) {
-  const { data } = await api.get<ProjectStatusCounts>(
-    `/api/spaces/${spaceId}/projects/counts`,
-    { signal }
-  );
+  const { data } = await api.get<ProjectStatusCounts>(`/api/spaces/${spaceId}/projects/counts`, {
+    signal,
+  });
   return data;
 }
 

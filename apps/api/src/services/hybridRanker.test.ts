@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  normalizeWeights,
-  rankHybrid,
-  semanticDistanceToSimilarity,
-} from "./hybridRanker.js";
+import { normalizeWeights, rankHybrid, semanticDistanceToSimilarity } from "./hybridRanker.js";
 
 describe("semanticDistanceToSimilarity", () => {
   it("maps cosine distance [0,2] to similarity [1,0]", () => {

@@ -68,93 +68,93 @@ export function SearchPanel({ projectId }: { projectId: string }) {
       description="Test hybrid retrieval over this project's indexed knowledge."
     >
       <div className="flex flex-col gap-4">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row" role="search">
-        <label htmlFor="project-search" className="sr-only">
-          Search project materials
-        </label>
-        <Input
-          id="project-search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Try a concept, keyword, or question…"
-          autoComplete="off"
-          maxLength={500}
-          className="flex-1"
-        />
-        <div className="flex gap-2">
-          <Button type="submit" disabled={search.isPending}>
-            {search.isPending ? (
-              <>
-                <Spinner className="mr-2" label="Searching…" /> Searching…
-              </>
-            ) : (
-              <>
-                <Search className="mr-2 h-4 w-4" aria-hidden /> Search
-              </>
-            )}
-          </Button>
-          {(query || freshData || search.isError) && (
-            <Button type="button" variant="outline" onClick={handleClear}>
-              <X className="mr-2 h-4 w-4" aria-hidden /> Clear
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row" role="search">
+          <label htmlFor="project-search" className="sr-only">
+            Search project materials
+          </label>
+          <Input
+            id="project-search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Try a concept, keyword, or question…"
+            autoComplete="off"
+            maxLength={500}
+            className="flex-1"
+          />
+          <div className="flex gap-2">
+            <Button type="submit" disabled={search.isPending}>
+              {search.isPending ? (
+                <>
+                  <Spinner className="mr-2" label="Searching…" /> Searching…
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" aria-hidden /> Search
+                </>
+              )}
             </Button>
-          )}
-        </div>
-      </form>
+            {(query || freshData || search.isError) && (
+              <Button type="button" variant="outline" onClick={handleClear}>
+                <X className="mr-2 h-4 w-4" aria-hidden /> Clear
+              </Button>
+            )}
+          </div>
+        </form>
 
-      {localError ? (
-        <p role="alert" className="text-sm text-destructive">
-          {localError}
-        </p>
-      ) : null}
-
-      {error ? <ApiErrorAlert message={toUserMessage(error)} requestId={requestId} /> : null}
-
-      {search.isPending ? <MaterialsSkeleton rows={2} /> : null}
-
-      {freshData && freshData.results.length === 0 ? (
-        <EmptyState
-          title="No relevant evidence found"
-          message="Nothing in this project's indexed materials matches. Try different keywords, or check back after materials finish processing."
-        />
-      ) : null}
-
-      {freshData && freshData.results.length > 0 ? (
-        <div className="flex flex-col gap-3" aria-live="polite">
-          <p className="text-sm text-muted-foreground">
-            {freshData.meta.resultCount} {freshData.meta.resultCount === 1 ? "result" : "results"}{" "}
-            in {freshData.meta.totalMs}ms
-            {freshData.meta.semanticMs === 0 ? " (lexical only)" : null}
+        {localError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {localError}
           </p>
-          {freshData.results.map((result) => (
-            <Card key={result.chunkId}>
-              <CardContent className="flex flex-col gap-2 p-4 sm:p-5">
-                <p className="text-sm leading-relaxed">{result.content}</p>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant="secondary">{result.materialName}</Badge>
-                  {result.pageNumber !== null ? <span>Page {result.pageNumber}</span> : null}
-                  <span title="Combined hybrid relevance score (0–1 similarity, not a probability)">
-                    Score {result.score.toFixed(2)}
-                  </span>
-                  {result.retrieval.semantic !== null ? (
-                    <span title="Semantic (pgvector cosine) similarity">
-                      semantic {result.retrieval.semantic.toFixed(2)}
+        ) : null}
+
+        {error ? <ApiErrorAlert message={toUserMessage(error)} requestId={requestId} /> : null}
+
+        {search.isPending ? <MaterialsSkeleton rows={2} /> : null}
+
+        {freshData && freshData.results.length === 0 ? (
+          <EmptyState
+            title="No relevant evidence found"
+            message="Nothing in this project's indexed materials matches. Try different keywords, or check back after materials finish processing."
+          />
+        ) : null}
+
+        {freshData && freshData.results.length > 0 ? (
+          <div className="flex flex-col gap-3" aria-live="polite">
+            <p className="text-sm text-muted-foreground">
+              {freshData.meta.resultCount} {freshData.meta.resultCount === 1 ? "result" : "results"}{" "}
+              in {freshData.meta.totalMs}ms
+              {freshData.meta.semanticMs === 0 ? " (lexical only)" : null}
+            </p>
+            {freshData.results.map((result) => (
+              <Card key={result.chunkId}>
+                <CardContent className="flex flex-col gap-2 p-4 sm:p-5">
+                  <p className="text-sm leading-relaxed">{result.content}</p>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <Badge variant="secondary">{result.materialName}</Badge>
+                    {result.pageNumber !== null ? <span>Page {result.pageNumber}</span> : null}
+                    <span title="Combined hybrid relevance score (0–1 similarity, not a probability)">
+                      Score {result.score.toFixed(2)}
                     </span>
-                  ) : (
-                    <span title="No semantic match — lexical only">lexical only</span>
-                  )}
-                  {result.retrieval.lexical !== null ? (
-                    <span title="Lexical (full-text) similarity">
-                      lexical {result.retrieval.lexical.toFixed(2)}
-                    </span>
-                  ) : (
-                    <span title="No keyword match — semantic only">semantic only</span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : null}
+                    {result.retrieval.semantic !== null ? (
+                      <span title="Semantic (pgvector cosine) similarity">
+                        semantic {result.retrieval.semantic.toFixed(2)}
+                      </span>
+                    ) : (
+                      <span title="No semantic match — lexical only">lexical only</span>
+                    )}
+                    {result.retrieval.lexical !== null ? (
+                      <span title="Lexical (full-text) similarity">
+                        lexical {result.retrieval.lexical.toFixed(2)}
+                      </span>
+                    ) : (
+                      <span title="No keyword match — semantic only">semantic only</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : null}
       </div>
     </SectionCard>
   );

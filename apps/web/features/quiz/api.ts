@@ -33,10 +33,9 @@ export async function fetchQuiz(quizId: string, signal?: AbortSignal) {
 }
 
 export async function fetchProjectConcepts(projectId: string, signal?: AbortSignal) {
-  const { data } = await api.get<ConceptListItem[]>(
-    `/api/projects/${projectId}/concepts`,
-    { signal }
-  );
+  const { data } = await api.get<ConceptListItem[]>(`/api/projects/${projectId}/concepts`, {
+    signal,
+  });
   return data;
 }
 

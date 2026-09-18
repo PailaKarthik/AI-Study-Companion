@@ -47,7 +47,9 @@ function TrendBadge({ trend }: { trend: ConceptGrowth["trend"] }) {
   );
 }
 
-function masteryStatusTone(status: ConceptGrowth["status"]): "success" | "neutral" | "warning" | "danger" {
+function masteryStatusTone(
+  status: ConceptGrowth["status"]
+): "success" | "neutral" | "warning" | "danger" {
   switch (status) {
     case "STRONG":
       return "success";
@@ -131,10 +133,7 @@ export function GrowthTab({ projectId }: { projectId: string }) {
         )}
       </SectionCard>
 
-      <SectionCard
-        title="Mastery distribution"
-        description="Assessed concepts by status band."
-      >
+      <SectionCard title="Mastery distribution" description="Assessed concepts by status band.">
         <DistributionBars
           ariaLabel="Concept mastery distribution"
           slices={Object.entries(bandCounts).map(([label, value]) => ({

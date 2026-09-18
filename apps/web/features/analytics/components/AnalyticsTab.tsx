@@ -131,7 +131,11 @@ export function AnalyticsTab({ projectId }: { projectId: string }) {
               { label: "Strong", value: data.masteryDistribution.strong, tone: "success" },
               { label: "Stable", value: data.masteryDistribution.stable, tone: "info" },
               { label: "Developing", value: data.masteryDistribution.developing, tone: "warning" },
-              { label: "Needs attention", value: data.masteryDistribution.needsAttention, tone: "danger" },
+              {
+                label: "Needs attention",
+                value: data.masteryDistribution.needsAttention,
+                tone: "danger",
+              },
               { label: "Unassessed", value: data.masteryDistribution.unassessed, tone: "neutral" },
             ]}
           />

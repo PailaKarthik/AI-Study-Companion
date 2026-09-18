@@ -178,7 +178,7 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
     for (const q of questions) {
       const options = (q.options ?? []) as string[];
       const choice = wrong
-        ? options.find((o) => o !== q.correctAnswer) ?? options[0] ?? ""
+        ? (options.find((o) => o !== q.correctAnswer) ?? options[0] ?? "")
         : (q.correctAnswer as string);
       await authedPost(app, `/api/quiz-attempts/${attemptId}/responses`, cookieA, {
         questionId: q.id,
@@ -229,7 +229,9 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
     const db = getTestPrisma();
     await runMcqQuiz(false);
 
-    const mastery = await db.conceptMastery.findMany({ where: { userId: userA, projectId: projectA } });
+    const mastery = await db.conceptMastery.findMany({
+      where: { userId: userA, projectId: projectA },
+    });
     expect(mastery.length).toBeGreaterThan(0);
     for (const row of mastery) {
       expect(row.masteryScore).toBeGreaterThanOrEqual(0);
@@ -237,7 +239,9 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
       expect(row.evidenceCount).toBeGreaterThan(0);
     }
 
-    const events = await db.masteryEvent.findMany({ where: { userId: userA, projectId: projectA } });
+    const events = await db.masteryEvent.findMany({
+      where: { userId: userA, projectId: projectA },
+    });
     expect(events.length).toBeGreaterThan(0);
     for (const event of events) {
       expect(event.previousScore).toBeNull();
@@ -251,9 +255,8 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
     });
     expect(activities.length).toBe(1);
 
-    const growth = (
-      await authedGet(app, `/api/projects/${projectA}/growth`, cookieA).expect(200)
-    ).body.data;
+    const growth = (await authedGet(app, `/api/projects/${projectA}/growth`, cookieA).expect(200))
+      .body.data;
     expect(growth.projectId).toBe(projectA);
     expect(growth.totalConcepts).toBe(2);
     expect(growth.assessedConcepts).toBeGreaterThan(0);
@@ -294,9 +297,8 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
   it("classifies trends from real event history", async () => {
     const db = getTestPrisma();
     await runMcqQuiz(false);
-    const growth = (
-      await authedGet(app, `/api/projects/${projectA}/growth`, cookieA).expect(200)
-    ).body.data;
+    const growth = (await authedGet(app, `/api/projects/${projectA}/growth`, cookieA).expect(200))
+      .body.data;
     expect(growth.assessedConcepts).toBe(2);
 
     // Deterministic trend shapes on dedicated concepts (exact histories).
@@ -316,7 +318,7 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
             conceptId: shape.conceptId,
             sourceType: "QUIZ",
             sourceId: `trend-seed-${shape.conceptId}-${i}`,
-            previousScore: i === 0 ? null : shape.scores[i - 1] ?? null,
+            previousScore: i === 0 ? null : (shape.scores[i - 1] ?? null),
             newScore: score,
             delta: i === 0 ? null : score - (shape.scores[i - 1] ?? score),
             confidence: 0.5,
@@ -325,9 +327,8 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
         });
       }
     }
-    const shaped = (
-      await authedGet(app, `/api/projects/${projectA}/growth`, cookieA).expect(200)
-    ).body.data;
+    const shaped = (await authedGet(app, `/api/projects/${projectA}/growth`, cookieA).expect(200))
+      .body.data;
     const byName = new Map(
       shaped.concepts.map((c: { conceptName: string; trend: string }) => [c.conceptName, c.trend])
     );
@@ -357,17 +358,28 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
     await runMcqQuiz(false);
     const concept = await db.concept.findFirstOrThrow({ where: { projectId: projectA } });
     await db.conceptMastery.upsert({
-      where: { userId_projectId_conceptId: { userId: userA, projectId: projectA, conceptId: concept.id } },
+      where: {
+        userId_projectId_conceptId: { userId: userA, projectId: projectA, conceptId: concept.id },
+      },
       update: { masteryScore: 0.92, confidence: 0.8, evidenceCount: 6 },
       create: {
-        userId: userA, projectId: projectA, conceptId: concept.id,
-        masteryScore: 0.92, confidence: 0.8, evidenceCount: 6,
+        userId: userA,
+        projectId: projectA,
+        conceptId: concept.id,
+        masteryScore: 0.92,
+        confidence: 0.8,
+        evidenceCount: 6,
       },
     });
     const staleReview = await db.recommendation.create({
       data: {
-        userId: userA, projectId: projectA, conceptId: concept.id,
-        type: "REVIEW", title: "Review X", priority: "HIGH", status: "PENDING",
+        userId: userA,
+        projectId: projectA,
+        conceptId: concept.id,
+        type: "REVIEW",
+        title: "Review X",
+        priority: "HIGH",
+        status: "PENDING",
       },
       select: { id: true },
     });
@@ -376,25 +388,38 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
     const mid = await db.concept.create({ data: { projectId: projectA, name: "Mid" } });
     await db.conceptMastery.create({
       data: {
-        userId: userA, projectId: projectA, conceptId: mid.id,
-        masteryScore: 0.5, confidence: 0.5, evidenceCount: 3,
+        userId: userA,
+        projectId: projectA,
+        conceptId: mid.id,
+        masteryScore: 0.5,
+        confidence: 0.5,
+        evidenceCount: 3,
       },
     });
     const stalePractice = await db.recommendation.create({
       data: {
-        userId: userA, projectId: projectA, conceptId: mid.id,
-        type: "REVIEW", title: "Review Mid", priority: "HIGH", status: "PENDING",
+        userId: userA,
+        projectId: projectA,
+        conceptId: mid.id,
+        type: "REVIEW",
+        title: "Review Mid",
+        priority: "HIGH",
+        status: "PENDING",
       },
       select: { id: true },
     });
 
-    await authedPost(app, `/api/projects/${projectA}/recommendations/refresh`, cookieA, {}).expect(200);
+    await authedPost(app, `/api/projects/${projectA}/recommendations/refresh`, cookieA, {}).expect(
+      200
+    );
 
     const review = await db.recommendation.findUniqueOrThrow({ where: { id: staleReview.id } });
     // Mastered goal → COMPLETED (achieved), superseded row → EXPIRED.
     expect(review.status).toBe("COMPLETED");
     expect(review.completedAt).not.toBeNull();
-    const superseded = await db.recommendation.findUniqueOrThrow({ where: { id: stalePractice.id } });
+    const superseded = await db.recommendation.findUniqueOrThrow({
+      where: { id: stalePractice.id },
+    });
     expect(superseded.status).toBe("EXPIRED");
   });
 
@@ -402,10 +427,20 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
     const db = getTestPrisma();
     await runMcqQuiz(true);
     const first = (
-      await authedPost(app, `/api/projects/${projectA}/recommendations/refresh`, cookieA, {}).expect(200)
+      await authedPost(
+        app,
+        `/api/projects/${projectA}/recommendations/refresh`,
+        cookieA,
+        {}
+      ).expect(200)
     ).body.data as { id: string; type: string; conceptId: string | null }[];
     const second = (
-      await authedPost(app, `/api/projects/${projectA}/recommendations/refresh`, cookieA, {}).expect(200)
+      await authedPost(
+        app,
+        `/api/projects/${projectA}/recommendations/refresh`,
+        cookieA,
+        {}
+      ).expect(200)
     ).body.data as { id: string; type: string; conceptId: string | null }[];
     const keys = (rows: typeof first) => rows.map((r) => `${r.type}::${r.conceptId ?? ""}`);
     expect(keys(second).sort()).toEqual(keys(first).sort());
@@ -423,7 +458,9 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
   it("drives tutor engagement markers without moving scores", async () => {
     const db = getTestPrisma();
     await runMcqQuiz(false);
-    const before = await db.conceptMastery.findMany({ where: { userId: userA, projectId: projectA } });
+    const before = await db.conceptMastery.findMany({
+      where: { userId: userA, projectId: projectA },
+    });
     const beforeById = new Map(before.map((m) => [m.conceptId, m.masteryScore]));
 
     await authedPost(app, `/api/projects/${projectA}/tutor/ask`, cookieA, {
@@ -438,7 +475,9 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
       expect(marker.delta).toBe(0);
       expect(marker.previousScore).toBe(marker.newScore);
     }
-    const after = await db.conceptMastery.findMany({ where: { userId: userA, projectId: projectA } });
+    const after = await db.conceptMastery.findMany({
+      where: { userId: userA, projectId: projectA },
+    });
     for (const row of after) {
       expect(row.masteryScore).toBe(beforeById.get(row.conceptId) ?? 0);
     }
@@ -461,9 +500,8 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
   });
 
   it("reports honest empty states without fabricating progress", async () => {
-    const empty = (
-      await authedGet(app, `/api/projects/${projectB}/growth`, cookieB).expect(200)
-    ).body.data;
+    const empty = (await authedGet(app, `/api/projects/${projectB}/growth`, cookieB).expect(200))
+      .body.data;
     expect(empty).toMatchObject({
       projectId: projectB,
       concepts: [],
@@ -492,15 +530,27 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
       where: { userId: userA, projectId: projectA, status: "PENDING" },
       select: { id: true },
     });
-    await request(app).post(`/api/recommendations/${rec.id}/complete`).set("Cookie", cookieA).expect(200);
-    await request(app).post(`/api/recommendations/${rec.id}/complete`).set("Cookie", cookieA).expect(409);
+    await request(app)
+      .post(`/api/recommendations/${rec.id}/complete`)
+      .set("Cookie", cookieA)
+      .expect(200);
+    await request(app)
+      .post(`/api/recommendations/${rec.id}/complete`)
+      .set("Cookie", cookieA)
+      .expect(409);
 
     const other = await db.recommendation.findFirstOrThrow({
       where: { userId: userA, projectId: projectA, status: "PENDING", id: { not: rec.id } },
       select: { id: true },
     });
-    await request(app).post(`/api/recommendations/${other.id}/dismiss`).set("Cookie", cookieA).expect(200);
-    await request(app).post(`/api/recommendations/${other.id}/dismiss`).set("Cookie", cookieA).expect(409);
+    await request(app)
+      .post(`/api/recommendations/${other.id}/dismiss`)
+      .set("Cookie", cookieA)
+      .expect(200);
+    await request(app)
+      .post(`/api/recommendations/${other.id}/dismiss`)
+      .set("Cookie", cookieA)
+      .expect(409);
 
     const dismissed = await db.recommendation.findUniqueOrThrow({ where: { id: other.id } });
     expect(dismissed.status).toBe("DISMISSED");
@@ -522,9 +572,17 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
     await authedGet(app, `/api/projects/${projectA}/growth`, cookieB).expect(404);
     await authedGet(app, `/api/projects/${projectA}/concepts/${concept.id}`, cookieB).expect(404);
     await authedGet(app, `/api/projects/${projectA}/recommendations`, cookieB).expect(404);
-    await authedPost(app, `/api/projects/${projectA}/recommendations/refresh`, cookieB, {}).expect(404);
-    await request(app).post(`/api/recommendations/${rec.id}/complete`).set("Cookie", cookieB).expect(404);
-    await request(app).post(`/api/recommendations/${rec.id}/dismiss`).set("Cookie", cookieB).expect(404);
+    await authedPost(app, `/api/projects/${projectA}/recommendations/refresh`, cookieB, {}).expect(
+      404
+    );
+    await request(app)
+      .post(`/api/recommendations/${rec.id}/complete`)
+      .set("Cookie", cookieB)
+      .expect(404);
+    await request(app)
+      .post(`/api/recommendations/${rec.id}/dismiss`)
+      .set("Cookie", cookieB)
+      .expect(404);
 
     // Foreign concept via own project path → 404, not another user's data.
     const foreign = await db.concept.create({ data: { projectId: projectB, name: "Foreign" } });
@@ -540,6 +598,9 @@ describe.skipIf(!hasTestDb)("mastery + growth + recommendations (isolated test D
   it("rejects malformed ids with 400", async () => {
     await authedGet(app, "/api/projects/not-a-uuid/growth", cookieA).expect(400);
     await authedGet(app, `/api/projects/${projectA}/concepts/not-a-uuid`, cookieA).expect(400);
-    await request(app).post("/api/recommendations/not-a-uuid/complete").set("Cookie", cookieA).expect(400);
+    await request(app)
+      .post("/api/recommendations/not-a-uuid/complete")
+      .set("Cookie", cookieA)
+      .expect(400);
   });
 });

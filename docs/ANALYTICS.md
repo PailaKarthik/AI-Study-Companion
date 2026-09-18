@@ -142,5 +142,3 @@ headers, API keys, session secrets, or raw prompts.
 - Redis/AI keys report presence, never live probes or values.
 - Home "improving" is a mean-delta proxy (documented in the UI copy).
 - Evaluation covers quality snapshots, not causal claims.
-
-

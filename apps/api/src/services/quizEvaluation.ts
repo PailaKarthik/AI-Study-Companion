@@ -39,9 +39,7 @@ export interface EvaluationRequest {
 function evaluationPrompt(request: EvaluationRequest): string {
   const evidenceText =
     request.evidence.length > 0
-      ? request.evidence
-          .map((e) => `${e.label}\n${e.content.slice(0, 1200)}`)
-          .join("\n\n")
+      ? request.evidence.map((e) => `${e.label}\n${e.content.slice(0, 1200)}`).join("\n\n")
       : "(No project evidence was available for this question.)";
   const rubric =
     request.keyPoints.length > 0

@@ -37,15 +37,9 @@ describe("structuredEvaluationSchema", () => {
   });
 
   it("rejects out-of-range scores and confidence", () => {
-    expect(
-      structuredEvaluationSchema.safeParse({ ...valid, score: 1.5 }).success
-    ).toBe(false);
-    expect(structuredEvaluationSchema.safeParse({ ...valid, score: -0.1 }).success).toBe(
-      false
-    );
-    expect(
-      structuredEvaluationSchema.safeParse({ ...valid, confidence: 2 }).success
-    ).toBe(false);
+    expect(structuredEvaluationSchema.safeParse({ ...valid, score: 1.5 }).success).toBe(false);
+    expect(structuredEvaluationSchema.safeParse({ ...valid, score: -0.1 }).success).toBe(false);
+    expect(structuredEvaluationSchema.safeParse({ ...valid, confidence: 2 }).success).toBe(false);
   });
 
   it("rejects unknown reasoning quality and oversized arrays", () => {
@@ -64,8 +58,6 @@ describe("structuredEvaluationSchema", () => {
     expect(
       structuredEvaluationSchema.safeParse({ ...valid, feedback: "x".repeat(2001) }).success
     ).toBe(false);
-    expect(structuredEvaluationSchema.safeParse({ ...valid, feedback: "" }).success).toBe(
-      false
-    );
+    expect(structuredEvaluationSchema.safeParse({ ...valid, feedback: "" }).success).toBe(false);
   });
 });

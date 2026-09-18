@@ -3,7 +3,13 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
 import { useSyncExternalStore } from "react";
-import { dismissToast, getToasts, pushToast, subscribeToasts, type ToastVariant } from "@/lib/toast";
+import {
+  dismissToast,
+  getToasts,
+  pushToast,
+  subscribeToasts,
+  type ToastVariant,
+} from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<ToastVariant, typeof Info> = {
@@ -50,7 +56,7 @@ export function Toaster() {
               transition={{ duration: 0.2, ease: "easeOut" }}
               className={cn(
                 "pointer-events-auto flex items-start gap-3 rounded-xl border bg-card p-4 shadow-lg",
-                toast.variant === "error" && "border-destructive/40",
+                toast.variant === "error" && "border-destructive/40"
               )}
             >
               <Icon
@@ -58,7 +64,7 @@ export function Toaster() {
                 className={cn(
                   "mt-0.5 h-4 w-4 shrink-0",
                   toast.variant === "error" && "text-destructive",
-                  toast.variant !== "error" && "text-muted-foreground",
+                  toast.variant !== "error" && "text-muted-foreground"
                 )}
               />
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">

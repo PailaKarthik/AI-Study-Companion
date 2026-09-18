@@ -30,7 +30,7 @@ describe("worker infrastructure", () => {
         jobName: "system.health",
         attempt: 1,
         correlationId: "corr-test",
-      },
+      }
     );
     expect(result.status).toBe("ok");
     expect(result.correlationId).toBe("corr-test");

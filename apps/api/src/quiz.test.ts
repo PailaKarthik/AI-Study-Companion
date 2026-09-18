@@ -87,7 +87,8 @@ function stubQuizChat(opts: { failGrader?: boolean } = {}): ChatCompletionProvid
                 missingConcepts: ["core mechanism"],
                 misconceptions: ["confuses energy direction"],
                 reasoningQuality: "POOR",
-                feedback: "What was right: little. Missing: the core mechanism. Correction: review the direction of energy flow. Review: the first evidence source.",
+                feedback:
+                  "What was right: little. Missing: the core mechanism. Correction: review the direction of energy flow. Review: the first evidence source.",
                 confidence: 0.9,
               }
             : {
@@ -97,7 +98,8 @@ function stubQuizChat(opts: { failGrader?: boolean } = {}): ChatCompletionProvid
                 missingConcepts: ["edge cases"],
                 misconceptions: [],
                 reasoningQuality: "GOOD",
-                feedback: "What was right: the core mechanism. Missing: edge cases. Correction: none major. Review: the second evidence source.",
+                feedback:
+                  "What was right: the core mechanism. Missing: edge cases. Correction: none major. Review: the second evidence source.",
                 confidence: 0.85,
               }
         );
@@ -390,9 +392,7 @@ describe.skipIf(!hasTestDb)("adaptive quiz API (isolated test DB)", () => {
 
     // Identical resubmission is idempotent; changed answers conflict.
     await answer(first.id, { selectedOption: first.correctAnswer }).expect(200);
-    const firstAlternatives = (first.options as string[]).filter(
-      (o) => o !== first.correctAnswer
-    );
+    const firstAlternatives = (first.options as string[]).filter((o) => o !== first.correctAnswer);
     await answer(first.id, { selectedOption: firstAlternatives[0] }).expect(409);
 
     // Finishing the set then completing scores deterministically.
@@ -407,7 +407,10 @@ describe.skipIf(!hasTestDb)("adaptive quiz API (isolated test DB)", () => {
     expect(resumed.id).toBe(attemptId);
 
     const result = (
-      await request(app).post(`/api/quiz-attempts/${attemptId}/complete`).set("Cookie", cookieA).expect(200)
+      await request(app)
+        .post(`/api/quiz-attempts/${attemptId}/complete`)
+        .set("Cookie", cookieA)
+        .expect(200)
     ).body.data;
     expect(result).toMatchObject({
       quizId,
@@ -426,7 +429,10 @@ describe.skipIf(!hasTestDb)("adaptive quiz API (isolated test DB)", () => {
     // Closed attempts reject further answers; completion is idempotent.
     await answer(first.id, { selectedOption: first.correctAnswer }).expect(409);
     const again = (
-      await request(app).post(`/api/quiz-attempts/${attemptId}/complete`).set("Cookie", cookieA).expect(200)
+      await request(app)
+        .post(`/api/quiz-attempts/${attemptId}/complete`)
+        .set("Cookie", cookieA)
+        .expect(200)
     ).body.data;
     expect(again.score).toBe(2);
 
@@ -474,7 +480,10 @@ describe.skipIf(!hasTestDb)("adaptive quiz API (isolated test DB)", () => {
         .set("Cookie", cookieA)
         .send({ questionId, responseText });
 
-    const good = await submit(q1.id, "Photosynthesis converts light into energy in chloroplasts.").expect(200);
+    const good = await submit(
+      q1.id,
+      "Photosynthesis converts light into energy in chloroplasts."
+    ).expect(200);
     expect(good.body.data).toMatchObject({
       answered: true,
       isCorrect: true,
@@ -492,7 +501,10 @@ describe.skipIf(!hasTestDb)("adaptive quiz API (isolated test DB)", () => {
     expect(graded[0]?.coveredConcepts).toContain("core mechanism");
 
     const result = (
-      await request(app).post(`/api/quiz-attempts/${attemptId}/complete`).set("Cookie", cookieA).expect(200)
+      await request(app)
+        .post(`/api/quiz-attempts/${attemptId}/complete`)
+        .set("Cookie", cookieA)
+        .expect(200)
     ).body.data;
     expect(result).toMatchObject({ openEndedCount: 2, maxScore: 2 });
     expect(result.score).toBeCloseTo(1.0);
@@ -565,7 +577,11 @@ describe.skipIf(!hasTestDb)("adaptive quiz API (isolated test DB)", () => {
     ).id;
 
     await request(app).get(`/api/quizzes/${quizId}`).set("Cookie", cookieB).expect(404);
-    await request(app).post(`/api/quizzes/${quizId}/attempts`).set("Cookie", cookieB).send({}).expect(404);
+    await request(app)
+      .post(`/api/quizzes/${quizId}/attempts`)
+      .set("Cookie", cookieB)
+      .send({})
+      .expect(404);
     await request(app).get(`/api/quiz-attempts/${attemptId}`).set("Cookie", cookieB).expect(404);
     await request(app)
       .post(`/api/quiz-attempts/${attemptId}/responses`)

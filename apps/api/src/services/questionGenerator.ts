@@ -35,10 +35,9 @@ const mcqQuestionSchema = z
     correctIndex: z.number().int().min(0).max(3),
     explanation: z.string().trim().min(1).max(1000),
   })
-  .refine(
-    (q) => new Set(q.options.map((o) => o.toLowerCase())).size === 4,
-    { message: "MCQ options must be unique" }
-  )
+  .refine((q) => new Set(q.options.map((o) => o.toLowerCase())).size === 4, {
+    message: "MCQ options must be unique",
+  })
   .refine((q) => !q.options.some((o) => FORBIDDEN_OPTION.test(o)), {
     message: "MCQ options must not use all/none of the above",
   });
@@ -55,7 +54,11 @@ const openEndedBatchSchema = z.object({
 });
 
 export function normalizePrompt(prompt: string): string {
-  return prompt.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  return prompt
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -220,9 +223,7 @@ export async function generateQuestions(
         const parsed =
           first.type === "MCQ"
             ? await completeJson(chat, mcqBatchSchema, [{ role: "user", content: prompt }])
-            : await completeJson(chat, openEndedBatchSchema, [
-                { role: "user", content: prompt },
-              ]);
+            : await completeJson(chat, openEndedBatchSchema, [{ role: "user", content: prompt }]);
         await recordQuizUsage(options.db, {
           userId: options.userId,
           projectId: options.projectId,
@@ -331,10 +332,7 @@ export async function generateQuestions(
     if (productive.length === 0) break;
     for (const state of productive) {
       const ownShortfall = state.group.length - state.drafts.length;
-      const orphanShare =
-        orphans.length > 0
-          ? Math.ceil(orphans.length / productive.length)
-          : 0;
+      const orphanShare = orphans.length > 0 ? Math.ceil(orphans.length / productive.length) : 0;
       const need = ownShortfall + orphanShare;
       if (need <= 0) continue;
       const before = state.drafts.length;

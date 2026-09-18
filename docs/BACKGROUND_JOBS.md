@@ -58,4 +58,3 @@ consumed) and uploads stay `QUEUED` with `enqueued: false` (retry via
 reprocess once Redis is up); without `GEMINI_API_KEY` knowledge jobs
 fail loudly with `UnrecoverableError` — use an injected mock provider
 in tests instead of faking success.
-

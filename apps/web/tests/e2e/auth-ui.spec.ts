@@ -7,9 +7,7 @@ import { test, expect } from "@playwright/test";
  * (network error) or up (401 envelope).
  */
 
-test("anonymous users meet the welcome experience at / (no login redirect)", async ({
-  page,
-}) => {
+test("anonymous users meet the welcome experience at / (no login redirect)", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: /learn anything/i })).toBeVisible();

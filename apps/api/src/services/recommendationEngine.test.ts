@@ -8,7 +8,9 @@ import {
 
 const OPTS = { strongAt: 0.8, attentionBelow: 0.4, developingBelow: 0.65 };
 
-function signal(overrides: Partial<RecommendationSignal> & { conceptId: string }): RecommendationSignal {
+function signal(
+  overrides: Partial<RecommendationSignal> & { conceptId: string }
+): RecommendationSignal {
   return {
     conceptName: overrides.conceptId,
     masteryScore: 0.5,
@@ -158,14 +160,12 @@ describe("buildCandidates", () => {
   });
 
   it("is deterministic for tied signals", () => {
-    const a = buildCandidates(
-      [signal({ conceptId: "b" }), signal({ conceptId: "a" })],
-      OPTS
-    ).map((c) => c.conceptId);
-    const b = buildCandidates(
-      [signal({ conceptId: "a" }), signal({ conceptId: "b" })],
-      OPTS
-    ).map((c) => c.conceptId);
+    const a = buildCandidates([signal({ conceptId: "b" }), signal({ conceptId: "a" })], OPTS).map(
+      (c) => c.conceptId
+    );
+    const b = buildCandidates([signal({ conceptId: "a" }), signal({ conceptId: "b" })], OPTS).map(
+      (c) => c.conceptId
+    );
     expect(a).toEqual(b);
   });
 });

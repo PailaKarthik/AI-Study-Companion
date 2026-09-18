@@ -130,7 +130,11 @@ export function OverviewSection() {
             </div>
           )}
         </SectionCard>
-        <SectionCard className="h-full" title="Background jobs" description="Persisted job outcomes in range.">
+        <SectionCard
+          className="h-full"
+          title="Background jobs"
+          description="Persisted job outcomes in range."
+        >
           {data.jobs.queued + data.jobs.processing + data.jobs.completed + data.jobs.failed ===
           0 ? (
             <EmptyState

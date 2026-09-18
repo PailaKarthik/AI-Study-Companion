@@ -97,7 +97,10 @@ export function QuizCreateForm({
         <form className="flex flex-col gap-6" onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <section aria-labelledby="quiz-step-count" className="flex flex-col gap-3">
             <h4 id="quiz-step-count" className="flex items-center gap-2 text-sm font-semibold">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[11px] font-bold text-white dark:bg-white dark:text-slate-950" aria-hidden>
+              <span
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[11px] font-bold text-white dark:bg-white dark:text-slate-950"
+                aria-hidden
+              >
                 1
               </span>
               How many questions?
@@ -124,110 +127,112 @@ export function QuizCreateForm({
                 </Button>
               ))}
               <span className="text-xs text-muted-foreground tabular-nums" aria-live="polite">
-                Number of questions:{" "}
-                {Number.isInteger(questionCount) ? questionCount : "—"}
+                Number of questions: {Number.isInteger(questionCount) ? questionCount : "—"}
               </span>
             </div>
           </section>
 
           <section aria-labelledby="quiz-step-mode" className="flex flex-col gap-3">
             <h4 id="quiz-step-mode" className="flex items-center gap-2 text-sm font-semibold">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[11px] font-bold text-white dark:bg-white dark:text-slate-950" aria-hidden>
+              <span
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[11px] font-bold text-white dark:bg-white dark:text-slate-950"
+                aria-hidden
+              >
                 2
               </span>
               Which mode?
             </h4>
             <div className="flex flex-col gap-1.5">
-            <span id="quiz-mode-label" className="sr-only">
-              Mode
-            </span>
-            <div
-              className="flex flex-wrap gap-2"
-              role="radiogroup"
-              aria-labelledby="quiz-mode-label"
-              onKeyDown={(event) => {
-                if (
-                  event.key !== "ArrowDown" &&
-                  event.key !== "ArrowUp" &&
-                  event.key !== "ArrowRight" &&
-                  event.key !== "ArrowLeft"
-                ) {
-                  return;
-                }
-                event.preventDefault();
-                const values = MODE_OPTIONS.map((o) => o.value);
-                const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
-                const from = values.indexOf(mode);
-                const next = values[(from + step + values.length) % values.length];
-                if (next !== undefined) {
-                  form.setValue("mode", next, { shouldValidate: true, shouldDirty: true });
-                  const group = event.currentTarget;
-                  group
-                    .querySelectorAll<HTMLButtonElement>('[role="radio"]')
-                    [values.indexOf(next)]?.focus();
-                }
-              }}
-            >
-              {MODE_OPTIONS.map((option, optionIndex) => (
-                <Button
-                  key={option.value}
-                  type="button"
-                  variant={mode === option.value ? "default" : "outline"}
-                  size="sm"
-                  role="radio"
-                  aria-checked={mode === option.value}
-                  tabIndex={mode === option.value || optionIndex === 0 ? 0 : -1}
-                  title={option.hint}
-                  onClick={() =>
-                    form.setValue("mode", option.value, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    })
+              <span id="quiz-mode-label" className="sr-only">
+                Mode
+              </span>
+              <div
+                className="flex flex-wrap gap-2"
+                role="radiogroup"
+                aria-labelledby="quiz-mode-label"
+                onKeyDown={(event) => {
+                  if (
+                    event.key !== "ArrowDown" &&
+                    event.key !== "ArrowUp" &&
+                    event.key !== "ArrowRight" &&
+                    event.key !== "ArrowLeft"
+                  ) {
+                    return;
                   }
-                >
-                  {option.label}
-                </Button>
-              ))}
+                  event.preventDefault();
+                  const values = MODE_OPTIONS.map((o) => o.value);
+                  const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+                  const from = values.indexOf(mode);
+                  const next = values[(from + step + values.length) % values.length];
+                  if (next !== undefined) {
+                    form.setValue("mode", next, { shouldValidate: true, shouldDirty: true });
+                    const group = event.currentTarget;
+                    group
+                      .querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                      [values.indexOf(next)]?.focus();
+                  }
+                }}
+              >
+                {MODE_OPTIONS.map((option, optionIndex) => (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    variant={mode === option.value ? "default" : "outline"}
+                    size="sm"
+                    role="radio"
+                    aria-checked={mode === option.value}
+                    tabIndex={mode === option.value || optionIndex === 0 ? 0 : -1}
+                    title={option.hint}
+                    onClick={() =>
+                      form.setValue("mode", option.value, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      })
+                    }
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                {MODE_OPTIONS.find((o) => o.value === mode)?.hint}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground" aria-live="polite">
-              {MODE_OPTIONS.find((o) => o.value === mode)?.hint}
-            </p>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="quiz-type" className="text-sm font-medium">
-                Question types
-              </label>
-              <select
-                id="quiz-type"
-                className="rounded-xl border border-input bg-background px-3 py-2.5 text-sm"
-                {...form.register("typePreference")}
-              >
-                {TYPE_OPTIONS.map((option) => (
-                  <option key={option.label} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="quiz-type" className="text-sm font-medium">
+                  Question types
+                </label>
+                <select
+                  id="quiz-type"
+                  className="rounded-xl border border-input bg-background px-3 py-2.5 text-sm"
+                  {...form.register("typePreference")}
+                >
+                  {TYPE_OPTIONS.map((option) => (
+                    <option key={option.label} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="quiz-difficulty" className="text-sm font-medium">
+                  Difficulty
+                </label>
+                <select
+                  id="quiz-difficulty"
+                  className="rounded-xl border border-input bg-background px-3 py-2.5 text-sm"
+                  {...form.register("difficulty")}
+                >
+                  {DIFFICULTY_OPTIONS.map((option) => (
+                    <option key={option.label} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="quiz-difficulty" className="text-sm font-medium">
-                Difficulty
-              </label>
-              <select
-                id="quiz-difficulty"
-                className="rounded-xl border border-input bg-background px-3 py-2.5 text-sm"
-                {...form.register("difficulty")}
-              >
-                {DIFFICULTY_OPTIONS.map((option) => (
-                  <option key={option.label} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
           </section>
 
           {mode === "CONCEPT_FOCUS" ? (

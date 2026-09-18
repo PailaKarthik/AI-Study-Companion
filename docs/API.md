@@ -140,7 +140,7 @@ Analysis. See `docs/ARCHITECTURE.md`.
   checksum per project (`deduplicated: true` returns the existing
   material), PUTs the bytes to the Neon Object Storage bucket under an
   isolated key (`users/<u>/spaces/<s>/projects/<p>/materials/<m>/
-  original.pdf` — never PostgreSQL), creates the
+original.pdf` — never PostgreSQL), creates the
   material as `QUEUED` with a durable `documentJob` row, records
   `MATERIAL_UPLOADED`, and enqueues `document.process` — Upload →
   Queued is automatic. Response carries `enqueued` + `jobId`
