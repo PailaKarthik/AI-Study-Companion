@@ -103,7 +103,10 @@ export function errorHandler(
       status,
       // Only include safe diagnostics; never echo bodies or secrets.
       errorName: error instanceof Error ? error.name : typeof error,
-      ...(config.isDevelopment && error instanceof Error ? { stack: error.stack } : {}),
+      // Server logs only (never sent to the client — see toErrorPayload):
+      // the message + stack are what make a production 500 diagnosable
+      // from platform logs. Without them a TypeError is just a name.
+      ...(error instanceof Error ? { errorMessage: error.message, stack: error.stack } : {}),
     },
     `Request failed: ${appError.code}`
   );
