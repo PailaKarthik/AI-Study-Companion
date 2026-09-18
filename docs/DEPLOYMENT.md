@@ -364,11 +364,14 @@ Rules that keep each process inside the budget:
    worker) and sharp decodes bounded image counts per job, so memory
    scales with concurrency — keep it low, let BullMQ queueing absorb
    bursts (upload → QUEUED → processed in turn; the UI polls).
-4. **Production installs skip dev weight.** Render runs
-   `pnpm install --frozen-lockfile` then prunes dev-only packages
-   (`typescript`, `vitest`, `tsx`, `supertest`, `pino-pretty` — already
-   moved to `devDependencies` where dev-only). Unused Radix packages
-   were removed from `apps/web`.
+4. **Install dev dependencies at build time.** Render sets
+   `NODE_ENV=production`, which makes `pnpm install` skip dev-only
+   packages — but the build needs the Prisma CLI (`prisma generate`,
+   `migrate deploy`) and `typescript` (`tsc`), which are devDependencies
+   by design. So every `render.yaml` build command starts with
+   `pnpm install --frozen-lockfile --prod=false`. They cost disk, not
+   RAM (Node only loads what `require`s at runtime), and unused Radix
+   packages were still removed from `apps/web`.
 5. **Sentry is optional.** Empty `SENTRY_DSN` disables it (saves
    ~20–30 MB resident). Keep it on for the API if you can afford it;
    first to drop on the worker if memory is tight.
