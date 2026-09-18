@@ -82,11 +82,14 @@ class ResilientRateLimitStore {
   }
 
   async increment(key: string): Promise<{ totalHits: number; resetTime: Date | undefined }> {
-    const redis = getSharedRedis();
-    if (!redis) {
-      return this.memory.increment(key);
-    }
     try {
+      // Inside the try by design: `new Redis()` throws synchronously on a
+      // malformed URL, and that must fall back to memory — not 500 the
+      // request (production incident: every route including /health).
+      const redis = getSharedRedis();
+      if (!redis) {
+        return this.memory.increment(key);
+      }
       const redisKey = this.redisKey(key);
       const totalHits = await redis.incr(redisKey);
       if (totalHits === 1) {

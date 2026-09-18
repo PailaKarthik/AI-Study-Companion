@@ -23,15 +23,36 @@ let connection: Redis | null = null;
 export function resolveRedisUrl(): string | null {
   if (config.REDIS_URL) return config.REDIS_URL;
   if (config.UPSTASH_REDIS_URL && config.UPSTASH_REDIS_TOKEN) {
-    try {
-      const url = new URL(config.UPSTASH_REDIS_URL);
-      const password = encodeURIComponent(config.UPSTASH_REDIS_TOKEN);
-      return `rediss://default:${password}@${url.host}:6379`;
-    } catch {
-      return null;
-    }
+    return buildUpstashTcpUrl(config.UPSTASH_REDIS_URL, config.UPSTASH_REDIS_TOKEN);
   }
   return null;
+}
+
+/**
+ * Compose an ioredis-ready TCP URL from the Upstash pair. Pure (no I/O)
+ * so the composition is unit-testable — a malformed composition once
+ * 500'd every request in production (ioredis `new Redis()` throws
+ * synchronously on `host:6379:6379`), so this returns null instead of a
+ * bad string and every caller treats null as "unconfigured".
+ *
+ * Accepts both credential shapes:
+ * - Full TCP URL already carrying credentials
+ *   (`rediss://default:<token>@<host>:6379`) → returned verbatim.
+ * - Bare host / REST URL (`https://<host>`) + token → composed as
+ *   `rediss://default:<token>@<host>:6379`.
+ */
+export function buildUpstashTcpUrl(upstashRedisUrl: string, token: string): string | null {
+  try {
+    const url = new URL(upstashRedisUrl);
+    if (url.username || url.password) return upstashRedisUrl;
+    const password = encodeURIComponent(token);
+    const port = url.port || "6379";
+    const composed = `rediss://default:${password}@${url.hostname}:${port}`;
+    new URL(composed);
+    return composed;
+  } catch {
+    return null;
+  }
 }
 
 export function isQueueConfigured(): boolean {

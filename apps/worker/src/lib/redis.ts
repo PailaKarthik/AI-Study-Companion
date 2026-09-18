@@ -33,15 +33,30 @@ function buildRedisUrl(): string | null {
   }
   const { UPSTASH_REDIS_URL, UPSTASH_REDIS_TOKEN } = workerConfig;
   if (UPSTASH_REDIS_URL && UPSTASH_REDIS_TOKEN) {
-    try {
-      const url = new URL(UPSTASH_REDIS_URL);
-      const password = encodeURIComponent(UPSTASH_REDIS_TOKEN);
-      return `rediss://default:${password}@${url.host}:6379`;
-    } catch {
-      return null;
-    }
+    return buildUpstashTcpUrl(UPSTASH_REDIS_URL, UPSTASH_REDIS_TOKEN);
   }
   return null;
+}
+
+/**
+ * Compose an ioredis-ready TCP URL from the Upstash pair. Pure (no I/O)
+ * so the composition is unit-testable. A full TCP URL that already
+ * carries credentials is returned verbatim — recomposing it would append
+ * a second `:6379` (`host:6379:6379`), which ioredis rejects with
+ * `TypeError: Invalid URL` (seen in production via the API rate limiter).
+ */
+export function buildUpstashTcpUrl(upstashRedisUrl: string, token: string): string | null {
+  try {
+    const url = new URL(upstashRedisUrl);
+    if (url.username || url.password) return upstashRedisUrl;
+    const password = encodeURIComponent(token);
+    const port = url.port || "6379";
+    const composed = `rediss://default:${password}@${url.hostname}:${port}`;
+    new URL(composed);
+    return composed;
+  } catch {
+    return null;
+  }
 }
 
 /** Exported for unit testing without opening a connection. */
