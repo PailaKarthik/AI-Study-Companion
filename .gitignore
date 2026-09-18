@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Prisma
+packages/db/generated/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Vitest / coverage
+coverage/
+
+# Misc
+*.tgz
+.vercel
+.turbo

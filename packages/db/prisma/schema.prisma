@@ -1,0 +1,943 @@
+// Prisma schema for AI Study Companion.
+//
+// Database: Neon PostgreSQL + pgvector.
+//   - `DATABASE_URL` → pooled/application connection (Neon pooler).
+//   - `DIRECT_URL`   → direct connection for Prisma migrations.
+//   - Never commit real credentials; see `.env.example`.
+//
+// Learning hierarchy:
+//   User → Space → Project → { Material → DocumentPage → KnowledgeChunk,
+//     Concept (+ConceptRelation), Conversation → Message → TutorEvidence,
+//     Quiz → QuizQuestion, QuizAttempt → QuizResponse → Assessment,
+//     ConceptMastery → MasteryEvent, Recommendation, ActivityEvent,
+//     AIUsage, AIEvaluation } + persistent LearnerContext.
+//
+// pgvector strategy (see docs/DATABASE.md):
+//   - Prisma 5 has no native `vector` type, so the embedding column is
+//     declared as `Unsupported("vector(768)")` (768 = Gemini
+//     `text-embedding-004` output dimensions).
+//   - The actual column type + HNSW index are created in raw SQL inside the
+//     migration (Prisma's `migrate diff` emits the column; the extension and
+//     vector index statements are appended manually).
+//   - Never fake embeddings with JSON arrays.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum LearnerContextType {
+  GOAL
+  PREFERENCE
+  STRENGTH
+  WEAKNESS
+  HISTORY
+  TUTOR_NOTE
+  ASSESSMENT_SUMMARY
+  REPEATED_MISTAKE
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  COMPLETED
+}
+
+enum MaterialStatus {
+  UPLOADED
+  QUEUED
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum DocumentJobType {
+  TEXT_EXTRACTION
+  CHUNKING
+  EMBEDDING
+  FULL_INGEST
+}
+
+enum DocumentJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+/// Knowledge-indexing lifecycle for a Material. Distinct from
+/// MaterialStatus (PDF processing): a document can be READY to read while
+/// its knowledge index is still NOT_STARTED. Stored beside the material so
+/// readers can filter to fully-indexed content without joining jobs.
+enum KnowledgeStatus {
+  NOT_STARTED
+  QUEUED
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum ConceptDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ConceptRelationType {
+  PREREQUISITE
+  RELATED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+enum QuestionType {
+  MCQ
+  OPEN_ENDED
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MasterySourceType {
+  QUIZ
+  OPEN_ENDED_ASSESSMENT
+  TUTOR_INTERACTION
+  LEARNING_ACTIVITY
+  SYSTEM
+}
+
+enum RecommendationType {
+  REVIEW
+  PRACTICE
+  EXPLORE
+  REVISIT
+  NEXT_STEP
+}
+
+enum RecommendationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RecommendationStatus {
+  PENDING
+  COMPLETED
+  DISMISSED
+  EXPIRED
+}
+
+enum AIFeature {
+  TUTOR
+  QUIZ_GENERATION
+  ASSESSMENT
+  RECOMMENDATION
+  EMBEDDING
+  DOCUMENT_UNDERSTANDING
+  EVALUATION
+}
+
+enum AIProvider {
+  GROQ
+  GEMINI
+  SYSTEM
+}
+
+enum AIUsageStatus {
+  SUCCESS
+  FAILED
+  TIMEOUT
+}
+
+// ---------------------------------------------------------------------------
+// Users + persistent learner context
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  name         String?
+  image        String?
+  role         UserRole  @default(USER)
+  // Argon2id hash. Null for accounts created before password auth or via
+  // future OAuth — such accounts cannot password-login until a hash is set.
+  passwordHash String?
+  // Administrative kill-switch. Inactive users cannot authenticate and
+  // their sessions validate as expired. No account-management UI yet.
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastActiveAt DateTime?
+
+  spaces          Space[]
+  sessions        Session[]
+  projects        Project[]        @relation("ProjectOwner")
+  learnerContexts LearnerContext[]
+  conversations   Conversation[]
+  quizzes         Quiz[]           @relation("QuizCreator")
+  quizAttempts    QuizAttempt[]
+  assessments     Assessment[]
+  mastery         ConceptMastery[]
+  masteryEvents   MasteryEvent[]
+  recommendations Recommendation[]
+  activityEvents  ActivityEvent[]
+  aiUsages        AIUsage[]
+  materials       Material[]       @relation("MaterialOwner")
+
+  @@index([role])
+  @@map("users")
+}
+
+/// Persistent learner context scoped to a user, optionally to one project.
+/// A normalized row-per-fact design (instead of one JSON blob per user) so
+/// facts can be ranked (`importance`), refreshed (`lastUsedAt`), expired,
+/// and scoped per project. Free-form detail lives in `content` + `metadata`.
+model LearnerContext {
+  id         String             @id @default(uuid()) @db.Uuid
+  userId     String             @db.Uuid
+  projectId  String?            @db.Uuid
+  type       LearnerContextType
+  content    String             @db.Text
+  metadata   Json?
+  importance Float              @default(0)
+  lastUsedAt DateTime?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, projectId])
+  @@index([userId, type])
+  @@map("learner_contexts")
+}
+
+/// Server-managed session. Only a SHA-256 HMAC of the opaque token
+/// (`tokenHash`, keyed by SESSION_SECRET) is stored — a database leak alone
+/// never yields usable session cookies. The raw token exists only in the
+/// httpOnly cookie and is never logged or returned by the API.
+model Session {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  lastUsedAt DateTime @default(now())
+  userAgent  String?
+  ipAddress  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ---------------------------------------------------------------------------
+// Spaces + Projects
+// ---------------------------------------------------------------------------
+
+model Space {
+  id          String   @id @default(uuid()) @db.Uuid
+  ownerId     String   @db.Uuid
+  name        String
+  description String?  @db.Text
+  icon        String?
+  color       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  // Prevents accidental duplicate space names per user (idempotency).
+  @@unique([ownerId, name])
+  @@index([ownerId])
+  @@map("spaces")
+}
+
+model Project {
+  id             String        @id @default(uuid()) @db.Uuid
+  spaceId        String        @db.Uuid
+  ownerId        String        @db.Uuid
+  name           String
+  description    String?       @db.Text
+  goal           String?       @db.Text
+  status         ProjectStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  lastActivityAt DateTime      @default(now())
+
+  space            Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  owner            User              @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  learnerContexts  LearnerContext[]
+  materials        Material[]
+  documentPages    DocumentPage[]
+  chunks           KnowledgeChunk[]
+  concepts         Concept[]
+  conceptRelations ConceptRelation[]
+  conversations    Conversation[]
+  messages         Message[]
+  quizzes          Quiz[]
+  quizQuestions    QuizQuestion[]
+  quizAttempts     QuizAttempt[]
+  quizResponses    QuizResponse[]
+  assessments      Assessment[]
+  mastery          ConceptMastery[]
+  masteryEvents    MasteryEvent[]
+  recommendations  Recommendation[]
+  activityEvents   ActivityEvent[]
+  aiUsages         AIUsage[]
+
+  // Prevents accidental duplicate project names inside one space.
+  @@unique([spaceId, name])
+  @@index([spaceId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([lastActivityAt])
+  @@map("projects")
+}
+
+// ---------------------------------------------------------------------------
+// Materials + document processing
+// ---------------------------------------------------------------------------
+
+model Material {
+  id                 String         @id @default(uuid()) @db.Uuid
+  projectId          String         @db.Uuid
+  ownerId            String         @db.Uuid
+  filename           String
+  originalFilename   String
+  mimeType           String
+  sizeBytes          Int
+  storageKey         String         @unique
+  /// Object-storage backend holding this material's bytes.
+  /// `NEON_OBJECT_STORAGE` = bytes live in the Neon Object Storage
+  /// bucket; PostgreSQL holds only metadata (`MaterialBlob` rows).
+  storageProvider    String         @default("NEON_OBJECT_STORAGE")
+  checksum           String?
+  status            MaterialStatus @default(UPLOADED)
+  pageCount         Int?
+  processingAttempts Int           @default(0)
+  lastError         String?        @db.Text
+  processedAt       DateTime?
+  /// Knowledge-indexing state (chunking + embeddings + FTS). Independent
+  /// of `status`: embedding failures must never mark a valid PDF as failed.
+  knowledgeStatus    KnowledgeStatus @default(NOT_STARTED)
+  knowledgeUpdatedAt DateTime?
+  knowledgeError     String?         @db.Text
+  metadata           Json?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner   User             @relation("MaterialOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  jobs    DocumentJob[]
+  pages   DocumentPage[]
+  chunks  KnowledgeChunk[]
+  blobs   MaterialBlob[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([checksum])
+  @@map("materials")
+}
+
+/// Metadata for one object in Neon Object Storage (S3-compatible
+/// bucket) — never the bytes themselves. One row per stored object:
+/// the source PDF plus any extracted page images the pipeline
+/// produces. `storageKey` is the bucket key
+/// (`users/<u>/spaces/<s>/projects/<p>/materials/<m>/…`) and
+/// `Material.storageKey` mirrors the source-PDF object's key.
+/// `Material.storageProvider` records the backend
+/// (`NEON_OBJECT_STORAGE`). Binaries are fetched from the bucket only
+/// by explicit key/material reads behind ownership checks.
+/// Metadata rows cascade-delete with the material; bucket objects are
+/// deleted explicitly by the API (tolerant of already-missing keys).
+model MaterialBlob {
+  id          String   @id @default(uuid()) @db.Uuid
+  materialId  String   @db.Uuid
+  /// SOURCE_PDF | EXTRACTED_IMAGE. Images carry pageNumber + dimensions.
+  kind        String
+  storageKey  String   @unique
+  mimeType    String
+  sizeBytes   Int
+  /// SHA-256 hex of the stored bytes. Powers dedup + integrity checks.
+  checksum    String
+  pageNumber  Int?
+  /// PNG dimensions for EXTRACTED_IMAGE rows (NULL for source PDFs).
+  width       Int?
+  height      Int?
+  createdAt   DateTime @default(now())
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([materialId])
+  @@index([checksum])
+  @@map("material_blobs")
+}
+
+/// Durable document-processing job state. BullMQ/Redis remains the transport,
+/// but this table is the source of truth for retries, idempotency and
+/// debugging — never rely exclusively on Redis for processing history.
+model DocumentJob {
+  id          String            @id @default(uuid()) @db.Uuid
+  materialId  String            @db.Uuid
+  /// BullMQ job id (for correlating queue state with durable state).
+  jobId       String?           @unique
+  type        DocumentJobType
+  status      DocumentJobStatus @default(QUEUED)
+  attempts    Int               @default(0)
+  maxAttempts Int               @default(5)
+  error       String?           @db.Text
+  startedAt   DateTime?
+  completedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([materialId])
+  @@index([status])
+  @@index([materialId, status])
+  @@index([status, createdAt])
+  @@map("document_jobs")
+}
+
+/// Page-level extracted content. Preserves page identity so the tutor can
+/// cite `Source: <file> — Page <n>`. Unique per (material, page) so retries
+/// upsert instead of duplicating pages.
+model DocumentPage {
+  id            String   @id @default(uuid()) @db.Uuid
+  materialId    String   @db.Uuid
+  projectId     String   @db.Uuid
+  pageNumber    Int
+  extractedText String   @db.Text
+  charCount     Int?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  material Material         @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  project  Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chunks   KnowledgeChunk[]
+
+  @@unique([materialId, pageNumber])
+  @@index([materialId])
+  @@index([projectId])
+  @@map("document_pages")
+}
+
+/// Retrieval-ready chunk. Traceable Project → Material → Page → Chunk.
+/// `pageNumber` is denormalized so citations render without a page join.
+/// `embedding` is pgvector `vector(768)` managed via raw SQL (see header).
+/// `contentHash` is SHA-256(normalized content) for change detection:
+/// same material + same index + same hash ⇒ skip re-embedding.
+/// `searchVector` is a generated `tsvector` for PostgreSQL full-text search,
+/// indexed with GIN — both managed via raw SQL (see migration 0003).
+model KnowledgeChunk {
+  id          String                      @id @default(uuid()) @db.Uuid
+  projectId   String                      @db.Uuid
+  materialId  String                      @db.Uuid
+  pageId      String?                     @db.Uuid
+  pageNumber  Int?
+  chunkIndex  Int
+  content     String                      @db.Text
+  tokenCount  Int?
+  contentHash String?
+  searchVector Unsupported("tsvector")?
+  metadata    Json?
+  embedding   Unsupported("vector(768)")?
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+
+  project  Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  material Material        @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  page     DocumentPage?   @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  evidence TutorEvidence[]
+
+  // One chunk index per material; re-ingestion upserts instead of dupes.
+  @@unique([materialId, chunkIndex])
+  @@index([projectId])
+  @@index([materialId])
+  @@index([pageId])
+  @@map("knowledge_chunks")
+}
+
+// ---------------------------------------------------------------------------
+// Concepts
+// ---------------------------------------------------------------------------
+
+model Concept {
+  id          String             @id @default(uuid()) @db.Uuid
+  projectId   String             @db.Uuid
+  name        String
+  description String?            @db.Text
+  source      String?
+  difficulty  ConceptDifficulty?
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  project         Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  relationsFrom   ConceptRelation[] @relation("RelationFrom")
+  relationsTo     ConceptRelation[] @relation("RelationTo")
+  quizQuestions   QuizQuestion[]
+  mastery         ConceptMastery[]
+  masteryEvents   MasteryEvent[]
+  recommendations Recommendation[]
+  assessments     Assessment[]
+
+  // Concept names must not duplicate within the same project.
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@map("concepts")
+}
+
+/// Lightweight progression edge (prerequisite / related). Not a full
+/// knowledge graph — just enough for future adaptive ordering.
+model ConceptRelation {
+  id            String              @id @default(uuid()) @db.Uuid
+  projectId     String              @db.Uuid
+  fromConceptId String              @db.Uuid
+  toConceptId   String              @db.Uuid
+  type          ConceptRelationType
+  createdAt     DateTime            @default(now())
+
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromConcept Concept @relation("RelationFrom", fields: [fromConceptId], references: [id], onDelete: Cascade)
+  toConcept   Concept @relation("RelationTo", fields: [toConceptId], references: [id], onDelete: Cascade)
+
+  @@unique([fromConceptId, toConceptId, type])
+  @@index([projectId])
+  @@map("concept_relations")
+}
+
+// ---------------------------------------------------------------------------
+// Conversations + retrieval evidence
+// ---------------------------------------------------------------------------
+
+model Conversation {
+  id            String    @id @default(uuid()) @db.Uuid
+  projectId     String    @db.Uuid
+  ownerId       String    @db.Uuid
+  title         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessageAt DateTime?
+
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([projectId])
+  @@index([ownerId])
+  @@index([projectId, updatedAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String      @id @default(uuid()) @db.Uuid
+  conversationId String      @db.Uuid
+  projectId      String      @db.Uuid
+  role           MessageRole
+  content        String      @db.Text
+  sequence       Int
+  /// Retrieval params / model info only — never the full retrieved context.
+  metadata       Json?
+  createdAt      DateTime    @default(now())
+
+  conversation Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  project      Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  evidence     TutorEvidence[]
+
+  @@unique([conversationId, sequence])
+  @@index([conversationId])
+  @@index([projectId])
+  @@map("messages")
+}
+
+/// Evidence behind one assistant message: which chunk/material/page was used
+/// and how relevant it was. Powers UI citations like
+/// `Source: Operating Systems.pdf — Page 14`.
+/// Cross-project references are forbidden (enforced at the service layer).
+model TutorEvidence {
+  id             String   @id @default(uuid()) @db.Uuid
+  messageId      String   @db.Uuid
+  chunkId        String?  @db.Uuid
+  materialId     String   @db.Uuid
+  pageId         String?  @db.Uuid
+  pageNumber     Int?
+  relevanceScore Float?
+  citationLabel  String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  message Message         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  chunk   KnowledgeChunk? @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+
+  @@index([messageId])
+  @@index([chunkId])
+  @@index([materialId])
+  @@map("tutor_evidence")
+}
+
+// ---------------------------------------------------------------------------
+// Quizzes
+// ---------------------------------------------------------------------------
+
+model Quiz {
+  id          String             @id @default(uuid()) @db.Uuid
+  projectId   String             @db.Uuid
+  createdById String?            @db.Uuid
+  title       String
+  description String?            @db.Text
+  difficulty  ConceptDifficulty?
+  status      QuizStatus         @default(DRAFT)
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User?          @relation("QuizCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@index([projectId])
+  @@index([status])
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String             @id @default(uuid()) @db.Uuid
+  quizId        String             @db.Uuid
+  projectId     String             @db.Uuid
+  conceptId     String?            @db.Uuid
+  type          QuestionType
+  prompt        String             @db.Text
+  /// MCQ options as JSON array; null for open-ended questions.
+  options       Json?
+  correctAnswer String?            @db.Text
+  explanation   String?            @db.Text
+  difficulty    ConceptDifficulty?
+  order         Int                @default(0)
+  metadata      Json?
+  createdAt     DateTime           @default(now())
+
+  quiz      Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept   Concept?       @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  responses QuizResponse[]
+
+  @@index([quizId])
+  @@index([projectId])
+  @@index([conceptId])
+  @@map("quiz_questions")
+}
+
+model QuizAttempt {
+  id             String    @id @default(uuid()) @db.Uuid
+  quizId         String    @db.Uuid
+  projectId      String    @db.Uuid
+  userId         String    @db.Uuid
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  score          Float?
+  maxScore       Float?
+  /// Client-generated key for safe quiz resubmission (idempotent submit).
+  idempotencyKey String?   @unique
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+
+  quiz        Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responses   QuizResponse[]
+  assessments Assessment[]
+
+  @@index([quizId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("quiz_attempts")
+}
+
+model QuizResponse {
+  id             String    @id @default(uuid()) @db.Uuid
+  attemptId      String    @db.Uuid
+  questionId     String    @db.Uuid
+  projectId      String    @db.Uuid
+  userId         String    @db.Uuid
+  responseText   String?   @db.Text
+  selectedOption String?
+  isCorrect      Boolean?
+  score          Float?
+  feedback       String?   @db.Text
+  evaluatedAt    DateTime?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+
+  attempt    QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  project    Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assessment Assessment?
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
+  @@map("quiz_responses")
+}
+
+/// Structured evaluation of one quiz response (Groq evaluator output,
+/// validated before persistence). `coveredConcepts` / `missingConcepts`
+/// are string arrays stored as JSON for flexibility.
+model Assessment {
+  id                String   @id @default(uuid()) @db.Uuid
+  attemptId         String   @db.Uuid
+  responseId        String?  @unique @db.Uuid
+  userId            String   @db.Uuid
+  projectId         String   @db.Uuid
+  conceptId         String?  @db.Uuid
+  score             Float?
+  accuracy          Float?
+  relevance         Float?
+  reasoningQuality  Float?
+  coveredConcepts   Json?
+  missingConcepts   Json?
+  feedback          String?  @db.Text
+  evaluatorModel    String?
+  evaluatorMetadata Json?
+  createdAt         DateTime @default(now())
+
+  attempt  QuizAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  response QuizResponse? @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project  Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept  Concept?      @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+
+  @@index([attemptId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([conceptId])
+  @@map("assessments")
+}
+
+// ---------------------------------------------------------------------------
+// Mastery
+// ---------------------------------------------------------------------------
+
+/// Core learning-state row: one per (user, project, concept).
+model ConceptMastery {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @db.Uuid
+  projectId      String    @db.Uuid
+  conceptId      String    @db.Uuid
+  masteryScore   Float     @default(0)
+  confidence     Float     @default(0)
+  evidenceCount  Int       @default(0)
+  lastAssessedAt DateTime?
+  lastActivityAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId, conceptId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([conceptId])
+  @@map("concept_mastery")
+}
+
+/// Append-only mastery change log. Powers future Growth Analysis
+/// (improving / stable / needs attention). Never updated, only inserted.
+model MasteryEvent {
+  id            String            @id @default(uuid()) @db.Uuid
+  userId        String            @db.Uuid
+  projectId     String            @db.Uuid
+  conceptId     String            @db.Uuid
+  sourceType    MasterySourceType
+  /// Polymorphic reference (attempt id, message id, …) — resolved by
+  /// `sourceType`, never a foreign key.
+  sourceId      String?
+  previousScore Float?
+  newScore      Float
+  delta         Float?
+  confidence    Float?
+  metadata      Json?
+  createdAt     DateTime          @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([projectId, createdAt])
+  @@index([conceptId, createdAt])
+  /// Idempotency boundary: (sourceType, sourceId, conceptId) must never
+  /// generate duplicate events — see masteryService.processAttemptMastery.
+  /// Enforced by partial unique index
+  /// mastery_events_source_dedupe_idx (migration 0006; nullable sourceId
+  /// needs a partial index, which Prisma cannot express in schema).
+  @@index([sourceType, sourceId])
+  @@map("mastery_events")
+}
+
+// ---------------------------------------------------------------------------
+// Recommendations
+// ---------------------------------------------------------------------------
+
+model Recommendation {
+  id          String                 @id @default(uuid()) @db.Uuid
+  userId      String                 @db.Uuid
+  projectId   String                 @db.Uuid
+  conceptId   String?                @db.Uuid
+  type        RecommendationType
+  title       String
+  description String?                @db.Text
+  action      String?
+  priority    RecommendationPriority @default(MEDIUM)
+  reason      String?                @db.Text
+  /// Trace back to the evidence that caused this recommendation
+  /// (e.g. `{ masteryEventId, assessmentId }`). Never free-form secrets.
+  evidence    Json?
+  status      RecommendationStatus @default(PENDING)
+  metadata    Json?
+  createdAt   DateTime             @default(now())
+  /// Last lifecycle transition (complete/dismiss/expire/refresh touch).
+  /// Powers "dismissed/completed in range" analytics without guessing.
+  updatedAt   DateTime             @updatedAt
+  expiresAt   DateTime?
+  completedAt DateTime?
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  concept Concept? @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([projectId, status])
+  @@index([userId, status])
+  @@map("recommendations")
+}
+
+// ---------------------------------------------------------------------------
+// Activity / events
+// ---------------------------------------------------------------------------
+
+/// Flexible analytics event log. `eventType` is a validated string (see
+/// `ActivityEventType` in `@ai-study-companion/shared`) rather than a DB
+/// enum so new product events don't require a migration. Never store
+/// sensitive data in `metadata`.
+model ActivityEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @db.Uuid
+  spaceId    String?  @db.Uuid
+  projectId  String?  @db.Uuid
+  eventType  String
+  entityType String?
+  entityId   String?
+  /// Optional client/operation key for idempotent recording (e.g.
+  /// `quiz-complete:<attemptId>`, `knowledge:<materialId>`). Unique when
+  /// present; retries reuse the key instead of duplicating the event.
+  idempotencyKey String? @unique
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([projectId, createdAt])
+  @@index([spaceId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("activity_events")
+}
+
+// ---------------------------------------------------------------------------
+// AI observability
+// ---------------------------------------------------------------------------
+
+model AIUsage {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String?       @db.Uuid
+  projectId     String?       @db.Uuid
+  feature       AIFeature
+  provider      AIProvider
+  model         String
+  requestId     String?
+  latencyMs     Int?
+  inputTokens   Int?
+  outputTokens  Int?
+  totalTokens   Int?
+  /// Estimated cost in USD. Computed server-side from provider pricing —
+  /// never accepted from frontend input.
+  estimatedCost Decimal?      @db.Decimal(10, 6)
+  status        AIUsageStatus @default(SUCCESS)
+  error         String?       @db.Text
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([projectId, createdAt])
+  @@index([feature, createdAt])
+  @@index([provider, createdAt])
+  @@index([status, createdAt])
+  @@index([requestId])
+  @@map("ai_usage")
+}
+
+/// Structured quality evaluations of AI output (groundedness, citation
+/// correctness, retrieval relevance, …). `scores` holds the evaluator's
+/// structured result; `targetType` + `targetId` point at the evaluated
+/// entity (message, assessment, recommendation, …) polymorphically.
+model AIEvaluation {
+  id                String     @id @default(uuid()) @db.Uuid
+  feature           AIFeature
+  model             String
+  provider          AIProvider @default(SYSTEM)
+  targetType        String?
+  targetId          String?
+  scores            Json
+  evaluator         String?
+  evaluatorMetadata Json?
+  createdAt         DateTime   @default(now())
+
+  @@index([feature, createdAt])
+  @@index([targetType, targetId])
+  /// Evaluator dedupe (one row per target+evaluator) is enforced by the
+  /// partial unique index ai_evaluations_target_dedupe_idx (migration
+  /// 0006; nullable columns need a partial index Prisma cannot express).
+  @@map("ai_evaluations")
+}

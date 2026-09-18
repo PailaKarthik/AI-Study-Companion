@@ -1,0 +1,35 @@
+{
+  "name": "ai-study-companion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Study Companion — monorepo foundation (Next.js + Express + Worker + Prisma)",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @ai-study-companion/web --filter @ai-study-companion/api --filter @ai-study-companion/worker dev",
+    "dev:web": "pnpm --filter @ai-study-companion/web dev",
+    "dev:api": "pnpm --filter @ai-study-companion/api dev",
+    "dev:worker": "pnpm --filter @ai-study-companion/worker dev",
+    "build": "pnpm --recursive build",
+    "build:web": "pnpm --filter @ai-study-companion/web build",
+    "build:api": "pnpm --filter @ai-study-companion/api build",
+    "build:worker": "pnpm --filter @ai-study-companion/worker build",
+    "lint": "pnpm --recursive lint",
+    "typecheck": "pnpm --recursive typecheck",
+    "test": "pnpm --recursive test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "db:generate": "pnpm --filter @ai-study-companion/db generate",
+    "db:migrate": "pnpm --filter @ai-study-companion/db migrate",
+    "db:push": "pnpm --filter @ai-study-companion/db push",
+    "db:seed": "pnpm --filter @ai-study-companion/db seed",
+    "db:studio": "pnpm --filter @ai-study-companion/db studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  }
+}

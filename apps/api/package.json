@@ -1,0 +1,46 @@
+{
+  "name": "@ai-study-companion/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ai-study-companion/ai": "workspace:^",
+    "@ai-study-companion/config": "workspace:*",
+    "@ai-study-companion/db": "workspace:*",
+    "@ai-study-companion/shared": "workspace:*",
+    "@ai-study-companion/validation": "workspace:*",
+    "@sentry/node": "^8.30.0",
+    "argon2": "^0.45.1",
+    "bullmq": "^5.12.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.1",
+    "pino": "^9.6.0",
+    "pino-http": "^10.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.16.13",
+    "@types/supertest": "^6.0.2",
+    "pino-pretty": "^13.1.3",
+    "supertest": "^6.3.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}
