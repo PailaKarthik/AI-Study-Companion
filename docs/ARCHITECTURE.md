@@ -214,9 +214,9 @@ PostgreSQL remains the single source of truth (rows and file bytes in
 
 ## Deployment mapping
 
-Vercel serves `apps/web`; Render runs `apps/api` (`node
+Vercel serves `apps/web`; Render runs `apps/api` (`tsx
 dist/server.js`, `PORT`-bound, `/health` + `/ready`) and
-`apps/worker` (`node dist/worker.js`, no port) as separate processes
+`apps/worker` (`tsx dist/worker.js`, no port) as separate processes
 with separate env (worker needs no `GROQ_API_KEY`, no `PORT`, no
 cookie settings). Managed services stay managed: Neon (pooled +
 direct URLs, plus an S3-compatible Object Storage bucket for PDFs +

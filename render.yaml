@@ -16,7 +16,7 @@ services:
       pnpm --filter @ai-study-companion/db generate &&
       pnpm --filter @ai-study-companion/db migrate:deploy &&
       pnpm --filter @ai-study-companion/api build
-    startCommand: NODE_OPTIONS=--max-old-space-size=384 node apps/api/dist/server.js
+    startCommand: NODE_OPTIONS=--max-old-space-size=384 pnpm --filter @ai-study-companion/api start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -65,7 +65,7 @@ services:
       pnpm install --frozen-lockfile --prod=false &&
       pnpm --filter @ai-study-companion/db generate &&
       pnpm --filter @ai-study-companion/worker build
-    startCommand: NODE_OPTIONS=--max-old-space-size=384 node apps/worker/dist/worker.js
+    startCommand: NODE_OPTIONS=--max-old-space-size=384 pnpm --filter @ai-study-companion/worker start
     envVars:
       - key: NODE_ENV
         value: production

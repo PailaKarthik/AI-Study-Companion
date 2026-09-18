@@ -11,8 +11,8 @@ migrations are verified locally.
 | Layer           | Choice                                         | Why                                                                                                                                                                       |
 | --------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Web (Next.js)   | **Vercel**                                     | First-party Next.js hosting: `next build`/`next start` work unchanged, env vars per environment, no Docker needed.                                                        |
-| API (Express)   | **Render** (Web Service, no Docker)            | Native Node runtime (`pnpm build` + `node dist/server.js`), honors `PORT`, free-tier friendly, no container config required.                                              |
-| Worker (BullMQ) | **Render** (Background Worker, no Docker)      | Same repo, different start command (`node dist/worker.js`); independent process with its own env.                                                                         |
+| API (Express)   | **Render** (Web Service, no Docker)            | Node runtime (`pnpm build` + `pnpm start` i.e. `tsx dist/server.js`), honors `PORT`, free-tier friendly, no container config required.                                    |
+| Worker (BullMQ) | **Render** (Background Worker, no Docker)      | Same repo, different start command (`tsx dist/worker.js`); independent process with its own env.                                                                          |
 | Database        | **Neon PostgreSQL** (+ pgvector)               | Already the implementation target; pooled + direct URLs, branching for staging.                                                                                           |
 | Redis           | **Upstash Redis** (TCP, TLS)                   | Already the implementation target; BullMQ requires TCP via ioredis (`rediss://`), not the REST client.                                                                    |
 | Storage         | **Neon Object Storage** (S3-compatible bucket) | Branch-scoped bucket in the same Neon project — PDFs + extracted images as objects, PostgreSQL holds only metadata. Branch credential (`storage:read` + `storage:write`). |
@@ -160,9 +160,15 @@ start` (Vercel handles this).
 ## 6. API deployment (Render web service)
 
 - Build: `pnpm --filter @ai-study-companion/api build` (`tsc -p
-tsconfig.build.json`). Start: `node dist/server.js` (workspace deps
-  are compiled into `dist` via project references — no repo copy
-  needed beyond the pnpm workspace install).
+tsconfig.build.json`). Start: `pnpm --filter @ai-study-companion/api
+start` (i.e. `tsx dist/server.js`). The `tsx` runtime is deliberate,
+  not a shortcut: workspace packages (`@ai-study-companion/db`,
+  `shared`, `validation`, …) publish TypeScript source via
+  `main: ./src/index.ts`, so plain `node` cannot resolve their
+  TS-suffixed imports at runtime. `tsx` loads the type-checked `dist`
+  output and resolves the workspace sources exactly like dev
+  (`tsx watch`) and the test runner do — one resolution behavior
+  everywhere.
 - Listens on `process.env.PORT` via `config.PORT`. Health: `GET
 /health` (liveness, always 200, no dependencies). Readiness: `GET
 /ready` (200 `ready` / 503 `not-ready`; database pinged when
@@ -180,7 +186,9 @@ tsconfig.build.json`). Start: `node dist/server.js` (workspace deps
 ## 7. Worker deployment (Render background worker)
 
 - Build: `pnpm --filter @ai-study-companion/worker build`. Start:
-  `node dist/worker.js`. No HTTP port needed.
+  `pnpm --filter @ai-study-companion/worker start` (i.e.
+  `tsx dist/worker.js` — same workspace-source reason as the API).
+  No HTTP port needed.
 - Connects to Upstash Redis over TLS (`rediss://`) with
   `maxRetriesPerRequest: null` (required by BullMQ). Consumes
   `aistudy.system`, `aistudy.knowledge`, `aistudy.evaluations`.
